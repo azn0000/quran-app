@@ -682,7 +682,7 @@ const SURAHS = [
 ];
 
 const TOTAL_VERSES = 6236;
-const STORAGE_KEY = "quran_tracker_v6";
+const STORAGE_KEY = "quran_tracker_v7";
 const FOUR_WEEKS_MS = 28 * 24 * 60 * 60 * 1000;
 
 const OBJECTIVE_CONFIG = {
@@ -788,12 +788,14 @@ function loadState(){
     if(!parsed.verseProgress) parsed.verseProgress = createVerseProgress();
     if(!parsed.selectedSurah) parsed.selectedSurah = 1;
     if(!parsed.mappingFilter) parsed.mappingFilter = "all";
+    if(!parsed.pendingWeekDate) parsed.pendingWeekDate = "";
     return parsed;
   }
   const initial = {
     currentWeekId:1,
     selectedSurah:1,
     mappingFilter:"all",
+    pendingWeekDate:"",
     weeks:[makeNewWeek(1)],
     verseProgress:createVerseProgress()
   };
@@ -823,25 +825,41 @@ function createNewWeek(){
   const week = makeNewWeek(nextId);
   state.weeks.push(week);
   state.currentWeekId = nextId;
+  state.pendingWeekDate = "";
   saveState();
   showView("objectives");
 }
 
+function setPendingWeekDate(value){
+  state.pendingWeekDate = value;
+  saveState();
+}
+
+function cancelPendingWeek(){
+  state.pendingWeekDate = "";
+  saveState();
+  showToast("Création de semaine annulée.");
+}
+
 function createWeekFromDate(){
-  const input = document.getElementById("newWeekDate");
-  if(!input || !input.value) return;
-  const existing = state.weeks.find(w => w.startDate === input.value);
+  const dateValue = state.pendingWeekDate;
+  if(!dateValue) return;
+
+  const existing = state.weeks.find(w => w.startDate === dateValue);
   if(existing){
     state.currentWeekId = existing.id;
+    state.pendingWeekDate = "";
     saveState();
     showToast("Cette semaine existe déjà.");
     showView("week");
     return;
   }
+
   const nextId = state.weeks.length ? Math.max(...state.weeks.map(w=>w.id))+1 : 1;
-  const week = makeNewWeek(nextId, input.value);
+  const week = makeNewWeek(nextId, dateValue);
   state.weeks.push(week);
   state.currentWeekId = nextId;
+  state.pendingWeekDate = "";
   saveState();
   showToast("Nouvelle semaine créée.");
   showView("objectives");
@@ -855,6 +873,15 @@ function selectWeek(id){
 
 function surahOptions(selected){
   return SURAHS.map(s=>`<option value="${s.n}" ${s.n===selected?"selected":""}>${s.n}. ${escapeHtml(s.name)}</option>`).join("");
+}
+
+function ayahOptions(surahNo, selectedAyah){
+  const max = maxAyah(surahNo);
+  let options = "";
+  for(let i = 1; i <= max; i++){
+    options += `<option value="${i}" ${i === Number(selectedAyah) ? "selected" : ""}>${i}</option>`;
+  }
+  return options;
 }
 
 function maxAyah(surahNo){
@@ -1096,6 +1123,62 @@ function toggleVerse(surahNo, ayahNo){
   saveState();
 }
 
+function selectAllVerses(surahNo){
+  const surah = SURAHS.find(s => s.n === Number(surahNo));
+  const data = state.verseProgress[surahNo];
+
+  data.validated = Array.from({length: surah.v}, (_, i) => i + 1);
+  data.validatedAt = {};
+  data.validated.forEach(v => {
+    data.validatedAt[v] = new Date().toISOString();
+  });
+
+  maybeHandleSurahCompletion(surahNo);
+  saveState();
+}
+
+function clearAllVerses(surahNo){
+  const data = state.verseProgress[surahNo];
+  data.validated = [];
+  data.validatedAt = {};
+  data.professorValidatedDate = "";
+  saveState();
+}
+
+function selectVerseRange(surahNo){
+  const startInput = document.getElementById(`rangeStart-${surahNo}`);
+  const endInput = document.getElementById(`rangeEnd-${surahNo}`);
+  if(!startInput || !endInput) return;
+
+  let start = parseInt(startInput.value || "1", 10);
+  let end = parseInt(endInput.value || "1", 10);
+
+  const max = maxAyah(surahNo);
+  if(isNaN(start)) start = 1;
+  if(isNaN(end)) end = 1;
+  if(start < 1) start = 1;
+  if(end > max) end = max;
+
+  if(start > end){
+    const temp = start;
+    start = end;
+    end = temp;
+  }
+
+  const data = state.verseProgress[surahNo];
+
+  for(let i = start; i <= end; i++){
+    if(!data.validated.includes(i)){
+      data.validated.push(i);
+      data.validatedAt[i] = new Date().toISOString();
+    }
+  }
+
+  data.validated.sort((a,b)=>a-b);
+  maybeHandleSurahCompletion(surahNo);
+  saveState();
+}
+
 function maybeHandleSurahCompletion(surahNo){
   const surah = SURAHS.find(s => s.n === Number(surahNo));
   const data = state.verseProgress[surahNo];
@@ -1246,11 +1329,12 @@ function renderObjectives(){
         </div>
         <div>
           <label>Créer une autre semaine à partir d’une date</label>
-          <input id="newWeekDate" type="date">
+          <input type="date" value="${escapeHtml(state.pendingWeekDate || "")}" onchange="setPendingWeekDate(this.value)">
         </div>
       </div>
       <div class="footer-actions">
         <button onclick="createWeekFromDate()">Créer la semaine</button>
+        <button class="secondary" onclick="cancelPendingWeek()">Annuler</button>
       </div>
     </div>
   `;
@@ -1282,7 +1366,9 @@ function renderObjectives(){
             </div>
             <div>
               <label>Début verset</label>
-              <input type="number" min="1" max="${maxAyah(obj.range.startSurah)}" value="${obj.range.startAyah}" onchange="updateObjectiveRange('${key}','startAyah',this.value)">
+              <select onchange="updateObjectiveRange('${key}','startAyah',this.value)">
+                ${ayahOptions(obj.range.startSurah, obj.range.startAyah)}
+              </select>
             </div>
             <div>
               <label>Fin sourate</label>
@@ -1290,7 +1376,9 @@ function renderObjectives(){
             </div>
             <div>
               <label>Fin verset</label>
-              <input type="number" min="1" max="${maxAyah(obj.range.endSurah)}" value="${obj.range.endAyah}" onchange="updateObjectiveRange('${key}','endAyah',this.value)">
+              <select onchange="updateObjectiveRange('${key}','endAyah',this.value)">
+                ${ayahOptions(obj.range.endSurah, obj.range.endAyah)}
+              </select>
             </div>
           </div>
           <div class="summary-box">
@@ -1321,7 +1409,9 @@ function renderObjectives(){
               </div>
               <div>
                 <label>Début verset</label>
-                <input type="number" min="1" max="${maxAyah(p.startSurah)}" value="${p.startAyah}" onchange="updateManualPart('${key}',${i},'startAyah',this.value)">
+                <select onchange="updateManualPart('${key}',${i},'startAyah',this.value)">
+                  ${ayahOptions(p.startSurah, p.startAyah)}
+                </select>
               </div>
               <div>
                 <label>Fin sourate</label>
@@ -1329,7 +1419,9 @@ function renderObjectives(){
               </div>
               <div>
                 <label>Fin verset</label>
-                <input type="number" min="1" max="${maxAyah(p.endSurah)}" value="${p.endAyah}" onchange="updateManualPart('${key}',${i},'endAyah',this.value)">
+                <select onchange="updateManualPart('${key}',${i},'endAyah',this.value)">
+                  ${ayahOptions(p.endSurah, p.endAyah)}
+                </select>
               </div>
             </div>
             <div class="summary-box">
@@ -1540,6 +1632,29 @@ function renderMapping(){
       <input type="date" value="${escapeHtml(data.professorValidatedDate || "")}" onchange="setProfessorValidatedDate(${selected.n}, this.value)">
     </div>
 
+    <div class="part-card" style="margin-top:12px;">
+      <h4>Sélection multiple</h4>
+      <div class="row">
+        <div>
+          <label>Verset début</label>
+          <select id="rangeStart-${selected.n}">
+            ${ayahOptions(selected.n, 1)}
+          </select>
+        </div>
+        <div>
+          <label>Verset fin</label>
+          <select id="rangeEnd-${selected.n}">
+            ${ayahOptions(selected.n, selected.v)}
+          </select>
+        </div>
+      </div>
+      <div class="footer-actions">
+        <button onclick="selectVerseRange(${selected.n})">Valider la plage</button>
+        <button class="secondary" onclick="selectAllVerses(${selected.n})">Tout sélectionner</button>
+        <button class="secondary" onclick="clearAllVerses(${selected.n})">Tout annuler</button>
+      </div>
+    </div>
+
     <div class="verse-grid">
       ${Array.from({length:selected.v}, (_,i) => {
         const ayah = i + 1;
@@ -1549,11 +1664,6 @@ function renderMapping(){
       }).join("")}
     </div>
   `;
-}
-
-function setProfessorValidatedDate(surahNo, value){
-  state.verseProgress[surahNo].professorValidatedDate = value;
-  saveState();
 }
 
 function formatDate(dateStr){
