@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Semainier d'étude du Qur'an</title>
+
+<style>
+
+body{
+font-family:Arial, sans-serif;
+background:#f4f1ea;
+margin:0;
+padding:20px;
+color:#1f2937;
+}
+
+.container{
+max-width:1000px;
+margin:auto;
+}
+
+.page{
+background:white;
+padding:25px;
+border-radius:14px;
+box-shadow:0 4px 14px rgba(0,0,0,0.08);
+margin-bottom:30px;
+}
+
+h1{
+text-align:center;
+color:#1f6f5f;
+}
+
+h2{
+margin-top:25px;
+color:#1f6f5f;
+}
+
+h3{
+color:#a67c2e;
+margin-top:15px;
+}
+
+.task{
+padding:8px 0;
+border-bottom:1px solid #eee;
+}
+
+.code{
+font-weight:bold;
+color:#1f6f5f;
+}
+
+textarea{
+width:100%;
+min-height:70px;
+border-radius:10px;
+border:1px solid #ccc;
+padding:10px;
+font-size:16px;
+margin-top:6px;
+}
+
+input[type="text"]{
+width:100%;
+border-radius:8px;
+border:1px solid #ccc;
+padding:8px;
+margin-top:6px;
+}
+
+.moment{
+margin-top:15px;
+padding:12px;
+background:#fafafa;
+border-radius:10px;
+}
+
+.exam{
+margin-top:10px;
+}
+
+.option{
+margin:6px 0;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- PAGE OBJECTIFS -->
+
+<div class="page">
+
+<h1>Objectifs de la semaine</h1>
+
+<h3>L — Lecture hebdomadaire</h3>
+<textarea placeholder="Définir l'objectif de lecture"></textarea>
+
+<h3>A — Apprentissage</h3>
+<textarea placeholder="Définir ce qui doit être appris"></textarea>
+
+<h3>RN — Révision récente</h3>
+<textarea placeholder="Révision des quatre dernières semaines"></textarea>
+
+<h3>RA — Révision ancienne</h3>
+<textarea placeholder="Passages anciens à réviser"></textarea>
+
+<h3>C — Consolidation</h3>
+<textarea placeholder="Passages à stabiliser"></textarea>
+
+<h3>DA — Découverte approfondie</h3>
+<textarea placeholder="Étude lente : tafsir, écriture, méditation"></textarea>
+
+</div>
+
+<!-- SEMAINIER -->
+
+<div class="page">
+
+<h1>Semainier</h1>
+
+<!-- LUNDI -->
+
+<h2>Lundi</h2>
+
+<div class="moment">
+
+<h3>Matin</h3>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">DA</span> Découverte approfondie</label>
+<input type="text" placeholder="Préciser ici">
+</div>
+
+</div>
+
+<div class="moment">
+
+<h3>Midi</h3>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">C</span> Consolidation</label>
+<input type="text" placeholder="Préciser">
+</div>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">RN</span> Révision nouvelle</label>
+<input type="text" placeholder="Préciser">
+</div>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">RA</span> Révision ancienne</label>
+<input type="text" placeholder="Préciser">
+</div>
+
+</div>
+
+<div class="moment">
+
+<h3>Soir</h3>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">L1</span> Lecture</label>
+<input type="text" placeholder="Préciser">
+</div>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">LF</span> Lecture future</label>
+<input type="text" placeholder="Préciser">
+</div>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">DA</span> Découverte</label>
+<input type="text" placeholder="Préciser">
+</div>
+
+</div>
+
+<!-- MARDI -->
+
+<h2>Mardi</h2>
+
+<div class="moment">
+<h3>Matin</h3>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">A1</span> Apprentissage</label>
+<input type="text">
+</div>
+</div>
+
+<div class="moment">
+<h3>Midi</h3>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">RN</span></label>
+<input type="text">
+</div>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">RA1</span></label>
+<input type="text">
+</div>
+
+</div>
+
+<div class="moment">
+<h3>Maghreb</h3>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">L2</span></label>
+<input type="text">
+</div>
+
+</div>
+
+<div class="moment">
+<h3>Soir</h3>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">A1</span></label>
+<input type="text">
+</div>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">LF</span></label>
+<input type="text">
+</div>
+
+</div>
+
+<!-- MERCREDI -->
+
+<h2>Mercredi</h2>
+
+<div class="moment">
+<h3>Matin</h3>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">A2</span></label>
+<input type="text">
+</div>
+
+</div>
+
+<div class="moment">
+<h3>Midi</h3>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">RN</span></label>
+<input type="text">
+</div>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">RA2</span></label>
+<input type="text">
+</div>
+
+</div>
+
+<div class="moment">
+<h3>Maghreb</h3>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">L3</span></label>
+<input type="text">
+</div>
+
+</div>
+
+<div class="moment">
+<h3>Soir</h3>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">A2</span></label>
+<input type="text">
+</div>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">LF</span></label>
+<input type="text">
+</div>
+
+</div>
+
+<!-- JEUDI -->
+
+<h2>Jeudi</h2>
+
+<div class="moment">
+<h3>Matin</h3>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">DA3 + DA4</span></label>
+<input type="text">
+</div>
+
+</div>
+
+<div class="moment">
+<h3>Midi</h3>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">C1 + C2</span></label>
+<input type="text">
+</div>
+
+</div>
+
+<div class="moment">
+<h3>Maghreb</h3>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">L4</span></label>
+<input type="text">
+</div>
+
+</div>
+
+<div class="moment">
+<h3>Soir</h3>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">C1 + C2</span></label>
+<input type="text">
+</div>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">DA3 + DA4</span></label>
+<input type="text">
+</div>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">LF</span></label>
+<input type="text">
+</div>
+
+</div>
+
+<!-- VENDREDI -->
+
+<h2>Vendredi</h2>
+
+<div class="moment">
+<h3>Matin</h3>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">A3</span></label>
+<input type="text">
+</div>
+</div>
+
+<div class="moment">
+<h3>Midi</h3>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">RN</span></label>
+<input type="text">
+</div>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">RA3</span></label>
+<input type="text">
+</div>
+</div>
+
+<div class="moment">
+<h3>Maghreb</h3>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">L5</span></label>
+<input type="text">
+</div>
+</div>
+
+<div class="moment">
+<h3>Soir</h3>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">A3</span></label>
+<input type="text">
+</div>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">LF</span></label>
+<input type="text">
+</div>
+</div>
+
+<!-- SAMEDI -->
+
+<h2>Samedi</h2>
+
+<div class="moment">
+<h3>Matin</h3>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">A4</span></label>
+<input type="text">
+</div>
+</div>
+
+<div class="moment">
+<h3>Midi</h3>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">RN</span></label>
+<input type="text">
+</div>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">RA4</span></label>
+<input type="text">
+</div>
+</div>
+
+<div class="moment">
+<h3>Maghreb</h3>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">L6</span></label>
+<input type="text">
+</div>
+</div>
+
+<div class="moment">
+<h3>Soir</h3>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">A4</span></label>
+<input type="text">
+</div>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">LF</span></label>
+<input type="text">
+</div>
+</div>
+
+<!-- DIMANCHE -->
+
+<h2>Dimanche</h2>
+
+<div class="moment">
+<h3>Matin</h3>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">C1 + C2 + C3 + C4</span></label>
+<input type="text">
+</div>
+
+</div>
+
+<div class="moment">
+<h3>Midi</h3>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">RA1 + RA2 + RA3 + RA4</span></label>
+<input type="text">
+</div>
+
+</div>
+
+<div class="moment">
+<h3>Maghreb</h3>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">L7</span></label>
+<input type="text">
+</div>
+
+</div>
+
+<div class="moment">
+<h3>Soir</h3>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">C1 + C2 + C3 + C4</span></label>
+<input type="text">
+</div>
+
+<div class="task">
+<label><input type="checkbox"> <span class="code">LF</span></label>
+<input type="text">
+</div>
+
+</div>
+
+</div>
+
+<!-- FEUILLE EXAMEN -->
+
+<div class="page">
+
+<h1>Feuille d'examen hebdomadaire</h1>
+
+<div class="exam">
+<h3>Apprentissage</h3>
+
+<div class="option"><input type="radio" name="a"> Très bien</div>
+<div class="option"><input type="radio" name="a"> Bien</div>
+<div class="option"><input type="radio" name="a"> Moyen</div>
+<div class="option"><input type="radio" name="a"> Non fait</div>
+
+</div>
+
+<div class="exam">
+<h3>Révision nouvelle</h3>
+
+<div class="option"><input type="radio" name="b"> Très bien</div>
+<div class="option"><input type="radio" name="b"> Bien</div>
+<div class="option"><input type="radio" name="b"> Moyen</div>
+<div class="option"><input type="radio" name="b"> Non fait</div>
+
+</div>
+
+<div class="exam">
+<h3>Révision ancienne</h3>
+
+<div class="option"><input type="radio" name="c"> Très bien</div>
+<div class="option"><input type="radio" name="c"> Bien</div>
+<div class="option"><input type="radio" name="c"> Moyen</div>
+<div class="option"><input type="radio" name="c"> Non fait</div>
+
+</div>
+
+<div class="exam">
+<h3>Lecture</h3>
+
+<div class="option"><input type="radio" name="d"> Très bien</div>
+<div class="option"><input type="radio" name="d"> Bien</div>
+<div class="option"><input type="radio" name="d"> Moyen</div>
+<div class="option"><input type="radio" name="d"> Non fait</div>
+
+</div>
+
+</div>
+
+</div>
+
+</body>
+</html>  
