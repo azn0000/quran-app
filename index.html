@@ -60,7 +60,7 @@
       color:var(--muted);
     }
 
-    .menu,.footer-actions,.mode-switch,.history-actions{
+    .menu,.footer-actions,.mode-switch,.history-actions,.filter-row{
       display:flex;
       flex-wrap:wrap;
       gap:10px;
@@ -82,12 +82,29 @@
       color:var(--text);
     }
 
+    button.ghost{
+      background:#f5f1e7;
+      color:var(--text);
+    }
+
+    button.active-filter{
+      background:var(--accent);
+      color:#fff;
+    }
+
     .view{ display:none; }
     .view.active{ display:block; }
 
     .grid{
       display:grid;
       grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      gap:14px;
+      margin-bottom:18px;
+    }
+
+    .mapping-top-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
       gap:14px;
       margin-bottom:18px;
     }
@@ -298,7 +315,7 @@
       100%{transform:translateY(110vh) rotate(720deg);opacity:0}
     }
 
-    .week-burst{
+    .week-burst, .surah-burst{
       position:fixed;
       left:50%;
       top:50%;
@@ -314,7 +331,7 @@
       text-align:center;
     }
 
-    .week-burst.show{
+    .week-burst.show, .surah-burst.show{
       display:block;
       animation:burst .9s ease;
     }
@@ -364,6 +381,10 @@
     .surah-card.green-light{
       background:#ecfccb;
       border-color:#86efac;
+    }
+
+    .surah-card.selected{
+      outline:3px solid rgba(31,111,95,.18);
     }
 
     .surah-meta{
@@ -441,6 +462,16 @@
     .dot.green-dark{background:#166534}
     .dot.green-light{background:#bbf7d0}
 
+    .mini-list{
+      margin:0;
+      padding-left:18px;
+      color:#374151;
+    }
+
+    .mini-list li{
+      margin-bottom:6px;
+    }
+
     @media (max-width:980px){
       .surah-layout{
         grid-template-columns:1fr;
@@ -459,6 +490,7 @@
 <div id="confetti-layer"></div>
 <div id="toast" class="toast"></div>
 <div id="weekBurst" class="week-burst">Semaine complétée !<br>بارك الله فيك</div>
+<div id="surahBurst" class="surah-burst">Sourate validée !<br>ما شاء الله</div>
 
 <div class="app">
   <div class="topbar">
@@ -554,7 +586,42 @@
       <span><i class="dot green-light"></i> À réviser (RA)</span>
     </div>
 
-    <div class="surah-layout" style="margin-top:14px;">
+    <div class="mapping-top-grid" style="margin-top:14px;">
+      <div class="card">
+        <div class="stat-label">Sourates à réviser (RA)</div>
+        <div class="stat-value" id="raSurahCount">0</div>
+        <div class="subtle" style="margin-top:8px;">Sourates validées depuis plus de 4 semaines</div>
+      </div>
+
+      <div class="card">
+        <div class="stat-label">Sourates entamées</div>
+        <div class="stat-value" id="startedSurahCount">0</div>
+        <div class="subtle" style="margin-top:8px;">Sourates commencées mais non terminées</div>
+      </div>
+
+      <div class="card">
+        <div class="stat-label">Prochaine sourate à finir</div>
+        <div id="nextSurahToFinish" class="subtle">Aucune sourate entamée</div>
+      </div>
+
+      <div class="card">
+        <div class="stat-label">Priorités RA</div>
+        <ul id="raPriorityList" class="mini-list"></ul>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px;">
+      <div class="stat-label">Filtres</div>
+      <div class="filter-row">
+        <button id="filter-all" class="active-filter" onclick="setMappingFilter('all')">Toutes</button>
+        <button id="filter-gray" class="ghost" onclick="setMappingFilter('gray')">Non apprises</button>
+        <button id="filter-yellow" class="ghost" onclick="setMappingFilter('yellow')">Entamées</button>
+        <button id="filter-green-dark" class="ghost" onclick="setMappingFilter('green-dark')">Validées récentes</button>
+        <button id="filter-green-light" class="ghost" onclick="setMappingFilter('green-light')">À réviser (RA)</button>
+      </div>
+    </div>
+
+    <div class="surah-layout">
       <div>
         <div id="surahList" class="surah-list"></div>
       </div>
@@ -615,7 +682,7 @@ const SURAHS = [
 ];
 
 const TOTAL_VERSES = 6236;
-const STORAGE_KEY = "quran_tracker_v5";
+const STORAGE_KEY = "quran_tracker_v6";
 const FOUR_WEEKS_MS = 28 * 24 * 60 * 60 * 1000;
 
 const OBJECTIVE_CONFIG = {
@@ -720,11 +787,13 @@ function loadState(){
     const parsed = JSON.parse(raw);
     if(!parsed.verseProgress) parsed.verseProgress = createVerseProgress();
     if(!parsed.selectedSurah) parsed.selectedSurah = 1;
+    if(!parsed.mappingFilter) parsed.mappingFilter = "all";
     return parsed;
   }
   const initial = {
     currentWeekId:1,
     selectedSurah:1,
+    mappingFilter:"all",
     weeks:[makeNewWeek(1)],
     verseProgress:createVerseProgress()
   };
@@ -747,10 +816,6 @@ function showView(id){
 
 function getWeek(){
   return state.weeks.find(w=>w.id===state.currentWeekId) || null;
-}
-
-function getWeekById(id){
-  return state.weeks.find(w=>w.id===id) || null;
 }
 
 function createNewWeek(){
@@ -989,6 +1054,30 @@ function countCompleteSurahs(){
   return SURAHS.filter(s => validatedVersesCount(s.n) === s.v).length;
 }
 
+function countStartedSurahs(){
+  return SURAHS.filter(s => {
+    const c = validatedVersesCount(s.n);
+    return c > 0 && c < s.v;
+  }).length;
+}
+
+function getRASurahs(){
+  return SURAHS.filter(s => getSurahStatus(s.n) === "green-light");
+}
+
+function getNextSurahToFinish(){
+  const started = SURAHS
+    .map(s => ({
+      ...s,
+      learned: validatedVersesCount(s.n),
+      remaining: s.v - validatedVersesCount(s.n)
+    }))
+    .filter(s => s.learned > 0 && s.learned < s.v)
+    .sort((a,b) => a.remaining - b.remaining || a.n - b.n);
+
+  return started[0] || null;
+}
+
 function toggleVerse(surahNo, ayahNo){
   const data = state.verseProgress[surahNo];
   const idx = data.validated.indexOf(ayahNo);
@@ -1015,8 +1104,7 @@ function maybeHandleSurahCompletion(surahNo){
   if(count === surah.v && !data.professorValidatedDate){
     const today = new Date().toISOString().slice(0,10);
     data.professorValidatedDate = today;
-    launchConfetti(90, "big");
-    showToast(`Sourate ${surah.name} validée !`);
+    triggerSurahCelebration(surah.name);
   }
 
   if(count < surah.v){
@@ -1031,6 +1119,11 @@ function setProfessorValidatedDate(surahNo, value){
 
 function selectSurah(surahNo){
   state.selectedSurah = Number(surahNo);
+  saveState();
+}
+
+function setMappingFilter(filter){
+  state.mappingFilter = filter;
   saveState();
 }
 
@@ -1094,6 +1187,15 @@ function triggerWeekCelebration(){
   const burst = document.getElementById("weekBurst");
   burst.classList.add("show");
   setTimeout(()=>burst.classList.remove("show"), 2200);
+}
+
+function triggerSurahCelebration(name){
+  showToast(`Sourate ${name} validée !`);
+  launchConfetti(120, "big");
+  const burst = document.getElementById("surahBurst");
+  burst.innerHTML = `Sourate validée !<br>${escapeHtml(name)}`;
+  burst.classList.add("show");
+  setTimeout(()=>burst.classList.remove("show"), 2400);
 }
 
 function updateWeekDate(value){
@@ -1342,11 +1444,53 @@ function renderHistory(){
     }).join("");
 }
 
+function renderMappingFilters(){
+  ["all","gray","yellow","green-dark","green-light"].forEach(f=>{
+    const btn = document.getElementById(`filter-${f}`);
+    if(!btn) return;
+    btn.className = state.mappingFilter === f ? "active-filter" : "ghost";
+  });
+}
+
+function renderMappingStats(){
+  const ra = getRASurahs();
+  const started = countStartedSurahs();
+  const next = getNextSurahToFinish();
+
+  document.getElementById("raSurahCount").textContent = ra.length;
+  document.getElementById("startedSurahCount").textContent = started;
+
+  const nextBox = document.getElementById("nextSurahToFinish");
+  if(next){
+    nextBox.innerHTML = `<strong>${escapeHtml(next.name)}</strong><br>${next.learned} / ${next.v} versets · reste ${next.remaining}`;
+  } else {
+    nextBox.textContent = "Aucune sourate entamée";
+  }
+
+  const raList = document.getElementById("raPriorityList");
+  if(!ra.length){
+    raList.innerHTML = `<li>Aucune sourate en RA pour l’instant</li>`;
+  } else {
+    raList.innerHTML = ra.slice(0,5).map(s=>{
+      const d = state.verseProgress[s.n].professorValidatedDate;
+      return `<li><strong>${escapeHtml(s.name)}</strong>${d ? ` — depuis le ${formatDate(d)}` : ""}</li>`;
+    }).join("");
+  }
+}
+
 function renderMapping(){
+  renderMappingFilters();
+  renderMappingStats();
+
   const list = document.getElementById("surahList");
   const panel = document.getElementById("versePanel");
 
-  list.innerHTML = SURAHS.map(s => {
+  const filtered = SURAHS.filter(s => {
+    const status = getSurahStatus(s.n);
+    return state.mappingFilter === "all" ? true : status === state.mappingFilter;
+  });
+
+  list.innerHTML = filtered.map(s => {
     const status = getSurahStatus(s.n);
     const validated = validatedVersesCount(s.n);
     const data = state.verseProgress[s.n];
@@ -1360,7 +1504,7 @@ function renderMapping(){
           : "À réviser (RA)";
 
     return `
-      <div class="surah-card ${status}" onclick="selectSurah(${s.n})">
+      <div class="surah-card ${status} ${state.selectedSurah === s.n ? "selected" : ""}" onclick="selectSurah(${s.n})">
         <div class="surah-top">
           <h3>${s.n}. ${escapeHtml(s.name)}</h3>
         </div>
@@ -1405,6 +1549,11 @@ function renderMapping(){
       }).join("")}
     </div>
   `;
+}
+
+function setProfessorValidatedDate(surahNo, value){
+  state.verseProgress[surahNo].professorValidatedDate = value;
+  saveState();
 }
 
 function formatDate(dateStr){
