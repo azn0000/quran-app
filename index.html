@@ -1,549 +1,765 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Suivi Qur'an</title>
+  <style>
+    :root{
+      --bg:#f4f1ea;
+      --card:#ffffff;
+      --soft:#faf8f3;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+      --accent:#1f6f5f;
+      --accent-2:#2b8d79;
+      --gold:#a67c2e;
+      --danger:#b45309;
+      --shadow:0 8px 24px rgba(0,0,0,.08);
+      --radius:18px;
+    }
 
-<title>Semainier d'étude du Qur'an</title>
+    *{ box-sizing:border-box; }
 
-<style>
+    body{
+      margin:0;
+      font-family:Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
 
-body{
-font-family:Arial, sans-serif;
-background:#f4f1ea;
-margin:0;
-padding:20px;
-color:#1f2937;
-}
+    .app{
+      max-width:1100px;
+      margin:0 auto;
+      padding:18px;
+    }
 
-.container{
-max-width:1000px;
-margin:auto;
-}
+    .topbar{
+      background:var(--card);
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+      border-radius:20px;
+      padding:18px;
+      margin-bottom:18px;
+    }
 
-.page{
-background:white;
-padding:25px;
-border-radius:14px;
-box-shadow:0 4px 14px rgba(0,0,0,0.08);
-margin-bottom:30px;
-}
+    .topbar h1{
+      margin:0 0 8px;
+      color:var(--accent);
+      font-size:28px;
+    }
 
-h1{
-text-align:center;
-color:#1f6f5f;
-}
+    .topbar p{
+      margin:0;
+      color:var(--muted);
+    }
 
-h2{
-margin-top:25px;
-color:#1f6f5f;
-}
+    .menu{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:16px;
+    }
 
-h3{
-color:#a67c2e;
-margin-top:15px;
-}
+    .menu button,
+    .action-btn{
+      border:none;
+      border-radius:12px;
+      padding:12px 16px;
+      cursor:pointer;
+      font-weight:700;
+      font-size:15px;
+    }
 
-.task{
-padding:8px 0;
-border-bottom:1px solid #eee;
-}
+    .menu button{
+      background:var(--accent);
+      color:#fff;
+    }
 
-.code{
-font-weight:bold;
-color:#1f6f5f;
-}
+    .menu button.secondary,
+    .action-btn.secondary{
+      background:#ece8de;
+      color:var(--text);
+    }
 
-textarea{
-width:100%;
-min-height:70px;
-border-radius:10px;
-border:1px solid #ccc;
-padding:10px;
-font-size:16px;
-margin-top:6px;
-}
+    .view{ display:none; }
+    .view.active{ display:block; }
 
-input[type="text"]{
-width:100%;
-border-radius:8px;
-border:1px solid #ccc;
-padding:8px;
-margin-top:6px;
-}
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:14px;
+      margin-bottom:18px;
+    }
 
-.moment{
-margin-top:15px;
-padding:12px;
-background:#fafafa;
-border-radius:10px;
-}
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:18px;
+      box-shadow:var(--shadow);
+      padding:16px;
+    }
 
-.exam{
-margin-top:10px;
-}
+    .card h2, .card h3{
+      margin:0 0 10px;
+    }
 
-.option{
-margin:6px 0;
-}
+    .stat-label{
+      color:var(--muted);
+      font-size:14px;
+      margin-bottom:8px;
+    }
 
-</style>
+    .stat-value{
+      font-size:30px;
+      font-weight:700;
+      color:var(--accent);
+    }
+
+    .progress{
+      width:100%;
+      height:12px;
+      background:#ebe6db;
+      border-radius:999px;
+      overflow:hidden;
+      margin-top:8px;
+    }
+
+    .progress > div{
+      height:100%;
+      width:0%;
+      background:linear-gradient(90deg,var(--accent),var(--accent-2));
+      border-radius:999px;
+      transition:width .25s ease;
+    }
+
+    .section-title{
+      margin:0 0 14px;
+      color:var(--gold);
+      font-size:22px;
+    }
+
+    .week-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:16px;
+    }
+
+    .week-selector{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    select, input[type="text"], textarea{
+      width:100%;
+      padding:10px 12px;
+      border:1px solid #d3d6db;
+      border-radius:10px;
+      font:inherit;
+      background:#fff;
+    }
+
+    textarea{
+      min-height:72px;
+      resize:vertical;
+    }
+
+    .week-meta{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+      gap:14px;
+      margin-bottom:18px;
+    }
+
+    .goal-block,
+    .day-card,
+    .history-week{
+      background:var(--card);
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+      border-radius:18px;
+      padding:16px;
+      margin-bottom:16px;
+    }
+
+    .goal-block h3,
+    .day-card h3,
+    .history-week h3{
+      margin:0 0 12px;
+      color:var(--accent);
+    }
+
+    .goal-item{
+      margin-bottom:12px;
+    }
+
+    .day-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+
+    .day-progress{
+      min-width:140px;
+      text-align:right;
+      font-weight:700;
+      color:var(--accent);
+    }
+
+    .moments{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:12px;
+    }
+
+    .moment{
+      background:var(--soft);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px;
+    }
+
+    .moment h4{
+      margin:0 0 10px;
+      color:var(--gold);
+      font-size:15px;
+      text-transform:uppercase;
+    }
+
+    .task{
+      border-top:1px solid #ece7dc;
+      padding-top:10px;
+      margin-top:10px;
+    }
+
+    .task:first-child{
+      border-top:none;
+      padding-top:0;
+      margin-top:0;
+    }
+
+    .task label{
+      display:flex;
+      gap:8px;
+      align-items:flex-start;
+      margin-bottom:8px;
+      font-weight:700;
+    }
+
+    .task small{
+      display:block;
+      color:var(--muted);
+      margin-top:6px;
+    }
+
+    .pill{
+      display:inline-block;
+      background:#e7f3ef;
+      color:var(--accent);
+      padding:5px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .history-list{
+      display:grid;
+      gap:14px;
+    }
+
+    .history-week-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+
+    .small-muted{
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .empty{
+      background:var(--card);
+      border:1px dashed var(--line);
+      border-radius:18px;
+      padding:20px;
+      color:var(--muted);
+      text-align:center;
+    }
+
+    .footer-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:12px;
+    }
+
+    @media (max-width:700px){
+      .topbar h1{ font-size:24px; }
+      .stat-value{ font-size:26px; }
+    }
+  </style>
 </head>
-
 <body>
-
-<div class="container">
-
-<!-- PAGE OBJECTIFS -->
-
-<div class="page">
-
-<h1>Objectifs de la semaine</h1>
-
-<h3>L — Lecture hebdomadaire</h3>
-<textarea placeholder="Définir l'objectif de lecture"></textarea>
-
-<h3>A — Apprentissage</h3>
-<textarea placeholder="Définir ce qui doit être appris"></textarea>
-
-<h3>RN — Révision récente</h3>
-<textarea placeholder="Révision des quatre dernières semaines"></textarea>
-
-<h3>RA — Révision ancienne</h3>
-<textarea placeholder="Passages anciens à réviser"></textarea>
-
-<h3>C — Consolidation</h3>
-<textarea placeholder="Passages à stabiliser"></textarea>
-
-<h3>DA — Découverte approfondie</h3>
-<textarea placeholder="Étude lente : tafsir, écriture, méditation"></textarea>
-
-</div>
-
-<!-- SEMAINIER -->
-
-<div class="page">
-
-<h1>Semainier</h1>
-
-<!-- LUNDI -->
-
-<h2>Lundi</h2>
-
-<div class="moment">
-
-<h3>Matin</h3>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">DA</span> Découverte approfondie</label>
-<input type="text" placeholder="Préciser ici">
-</div>
-
-</div>
-
-<div class="moment">
-
-<h3>Midi</h3>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">C</span> Consolidation</label>
-<input type="text" placeholder="Préciser">
-</div>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">RN</span> Révision nouvelle</label>
-<input type="text" placeholder="Préciser">
-</div>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">RA</span> Révision ancienne</label>
-<input type="text" placeholder="Préciser">
-</div>
-
-</div>
-
-<div class="moment">
-
-<h3>Soir</h3>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">L1</span> Lecture</label>
-<input type="text" placeholder="Préciser">
-</div>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">LF</span> Lecture future</label>
-<input type="text" placeholder="Préciser">
-</div>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">DA</span> Découverte</label>
-<input type="text" placeholder="Préciser">
-</div>
-
-</div>
-
-<!-- MARDI -->
-
-<h2>Mardi</h2>
-
-<div class="moment">
-<h3>Matin</h3>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">A1</span> Apprentissage</label>
-<input type="text">
-</div>
-</div>
-
-<div class="moment">
-<h3>Midi</h3>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">RN</span></label>
-<input type="text">
-</div>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">RA1</span></label>
-<input type="text">
-</div>
-
-</div>
-
-<div class="moment">
-<h3>Maghreb</h3>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">L2</span></label>
-<input type="text">
-</div>
-
-</div>
-
-<div class="moment">
-<h3>Soir</h3>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">A1</span></label>
-<input type="text">
-</div>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">LF</span></label>
-<input type="text">
-</div>
-
-</div>
-
-<!-- MERCREDI -->
-
-<h2>Mercredi</h2>
-
-<div class="moment">
-<h3>Matin</h3>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">A2</span></label>
-<input type="text">
-</div>
-
-</div>
-
-<div class="moment">
-<h3>Midi</h3>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">RN</span></label>
-<input type="text">
-</div>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">RA2</span></label>
-<input type="text">
-</div>
-
-</div>
-
-<div class="moment">
-<h3>Maghreb</h3>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">L3</span></label>
-<input type="text">
-</div>
-
-</div>
-
-<div class="moment">
-<h3>Soir</h3>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">A2</span></label>
-<input type="text">
-</div>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">LF</span></label>
-<input type="text">
-</div>
-
-</div>
-
-<!-- JEUDI -->
-
-<h2>Jeudi</h2>
-
-<div class="moment">
-<h3>Matin</h3>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">DA3 + DA4</span></label>
-<input type="text">
-</div>
-
-</div>
-
-<div class="moment">
-<h3>Midi</h3>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">C1 + C2</span></label>
-<input type="text">
-</div>
-
-</div>
-
-<div class="moment">
-<h3>Maghreb</h3>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">L4</span></label>
-<input type="text">
-</div>
-
-</div>
-
-<div class="moment">
-<h3>Soir</h3>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">C1 + C2</span></label>
-<input type="text">
-</div>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">DA3 + DA4</span></label>
-<input type="text">
-</div>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">LF</span></label>
-<input type="text">
-</div>
-
-</div>
-
-<!-- VENDREDI -->
-
-<h2>Vendredi</h2>
-
-<div class="moment">
-<h3>Matin</h3>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">A3</span></label>
-<input type="text">
-</div>
-</div>
-
-<div class="moment">
-<h3>Midi</h3>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">RN</span></label>
-<input type="text">
-</div>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">RA3</span></label>
-<input type="text">
-</div>
-</div>
-
-<div class="moment">
-<h3>Maghreb</h3>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">L5</span></label>
-<input type="text">
-</div>
-</div>
-
-<div class="moment">
-<h3>Soir</h3>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">A3</span></label>
-<input type="text">
-</div>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">LF</span></label>
-<input type="text">
-</div>
-</div>
-
-<!-- SAMEDI -->
-
-<h2>Samedi</h2>
-
-<div class="moment">
-<h3>Matin</h3>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">A4</span></label>
-<input type="text">
-</div>
-</div>
-
-<div class="moment">
-<h3>Midi</h3>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">RN</span></label>
-<input type="text">
-</div>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">RA4</span></label>
-<input type="text">
-</div>
-</div>
-
-<div class="moment">
-<h3>Maghreb</h3>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">L6</span></label>
-<input type="text">
-</div>
-</div>
-
-<div class="moment">
-<h3>Soir</h3>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">A4</span></label>
-<input type="text">
-</div>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">LF</span></label>
-<input type="text">
-</div>
-</div>
-
-<!-- DIMANCHE -->
-
-<h2>Dimanche</h2>
-
-<div class="moment">
-<h3>Matin</h3>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">C1 + C2 + C3 + C4</span></label>
-<input type="text">
-</div>
-
-</div>
-
-<div class="moment">
-<h3>Midi</h3>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">RA1 + RA2 + RA3 + RA4</span></label>
-<input type="text">
-</div>
-
-</div>
-
-<div class="moment">
-<h3>Maghreb</h3>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">L7</span></label>
-<input type="text">
-</div>
-
-</div>
-
-<div class="moment">
-<h3>Soir</h3>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">C1 + C2 + C3 + C4</span></label>
-<input type="text">
-</div>
-
-<div class="task">
-<label><input type="checkbox"> <span class="code">LF</span></label>
-<input type="text">
-</div>
-
-</div>
-
-</div>
-
-<!-- FEUILLE EXAMEN -->
-
-<div class="page">
-
-<h1>Feuille d'examen hebdomadaire</h1>
-
-<div class="exam">
-<h3>Apprentissage</h3>
-
-<div class="option"><input type="radio" name="a"> Très bien</div>
-<div class="option"><input type="radio" name="a"> Bien</div>
-<div class="option"><input type="radio" name="a"> Moyen</div>
-<div class="option"><input type="radio" name="a"> Non fait</div>
-
-</div>
-
-<div class="exam">
-<h3>Révision nouvelle</h3>
-
-<div class="option"><input type="radio" name="b"> Très bien</div>
-<div class="option"><input type="radio" name="b"> Bien</div>
-<div class="option"><input type="radio" name="b"> Moyen</div>
-<div class="option"><input type="radio" name="b"> Non fait</div>
-
-</div>
-
-<div class="exam">
-<h3>Révision ancienne</h3>
-
-<div class="option"><input type="radio" name="c"> Très bien</div>
-<div class="option"><input type="radio" name="c"> Bien</div>
-<div class="option"><input type="radio" name="c"> Moyen</div>
-<div class="option"><input type="radio" name="c"> Non fait</div>
-
-</div>
-
-<div class="exam">
-<h3>Lecture</h3>
-
-<div class="option"><input type="radio" name="d"> Très bien</div>
-<div class="option"><input type="radio" name="d"> Bien</div>
-<div class="option"><input type="radio" name="d"> Moyen</div>
-<div class="option"><input type="radio" name="d"> Non fait</div>
-
-</div>
-
-</div>
-
-</div>
-
+  <div class="app">
+    <div class="topbar">
+      <h1>Suivi du Qur'an</h1>
+      <p>Tableau de bord, semaine en cours et historique des semaines.</p>
+      <div class="menu">
+        <button onclick="showView('dashboard')">Tableau de bord</button>
+        <button onclick="showView('currentWeek')">Semaine en cours</button>
+        <button onclick="showView('history')">Toutes les semaines</button>
+        <button class="secondary" onclick="createNewWeek()">Nouvelle semaine</button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <section id="dashboard" class="view active">
+      <div class="grid">
+        <div class="card">
+          <div class="stat-label">Apprentissage global du Qur'an</div>
+          <div class="stat-value" id="globalQuranPercent">0%</div>
+          <div class="progress"><div id="globalQuranBar"></div></div>
+          <div class="small-muted" style="margin-top:8px;">À définir manuellement selon ton avancée réelle.</div>
+        </div>
+
+        <div class="card">
+          <div class="stat-label">Semaines complétées</div>
+          <div class="stat-value" id="completedWeeksCount">0</div>
+          <div class="small-muted" style="margin-top:8px;">Nombre de semaines terminées à 100%.</div>
+        </div>
+
+        <div class="card">
+          <div class="stat-label">Avancée de la semaine en cours</div>
+          <div class="stat-value" id="currentWeekPercentBig">0%</div>
+          <div class="progress"><div id="currentWeekBarBig"></div></div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <h2>Réglage du pourcentage global</h2>
+          <div class="goal-item">
+            <label for="globalProgressInput">Pourcentage global du hifdh / apprentissage en cours</label>
+            <input type="text" id="globalProgressInput" placeholder="Exemple : 18">
+          </div>
+          <div class="footer-actions">
+            <button class="action-btn" onclick="saveGlobalProgress()">Enregistrer</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Accès rapide</h2>
+          <div class="footer-actions">
+            <button class="action-btn" onclick="showView('currentWeek')">Aller à la semaine en cours</button>
+            <button class="action-btn secondary" onclick="showView('history')">Voir toutes les semaines</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CURRENT WEEK -->
+    <section id="currentWeek" class="view">
+      <div class="week-header">
+        <div>
+          <h2 class="section-title" style="margin-bottom:6px;">Semaine en cours</h2>
+          <div class="small-muted" id="currentWeekLabel">Aucune semaine créée</div>
+        </div>
+        <div class="week-selector">
+          <span class="pill" id="currentWeekPercentPill">0%</span>
+        </div>
+      </div>
+
+      <div id="weekContent"></div>
+    </section>
+
+    <!-- HISTORY -->
+    <section id="history" class="view">
+      <h2 class="section-title">Toutes les semaines réalisées</h2>
+      <div id="historyContent" class="history-list"></div>
+    </section>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "quran_tracker_v2";
+
+    const weekTemplate = {
+      goals: {
+        L: "",
+        A: "",
+        RN: "",
+        RA: "",
+        C: "",
+        DA: ""
+      },
+      days: [
+        {
+          name: "Lundi",
+          moments: [
+            { name: "Matin", tasks: [{ code: "DA", label: "Découverte approfondie", checked: false, detail: "" }] },
+            { name: "Midi", tasks: [
+              { code: "C", label: "Consolidation", checked: false, detail: "" },
+              { code: "RN", label: "Révision nouvelle", checked: false, detail: "" },
+              { code: "RA", label: "Révision ancienne", checked: false, detail: "" }
+            ]},
+            { name: "Soir", tasks: [
+              { code: "L1", label: "Lecture", checked: false, detail: "" },
+              { code: "LF", label: "Lecture future", checked: false, detail: "" },
+              { code: "DA", label: "Découverte approfondie", checked: false, detail: "" }
+            ]}
+          ]
+        },
+        {
+          name: "Mardi",
+          moments: [
+            { name: "Matin", tasks: [{ code: "A1", label: "Apprentissage", checked: false, detail: "" }] },
+            { name: "Midi", tasks: [
+              { code: "RN", label: "Révision nouvelle", checked: false, detail: "" },
+              { code: "RA1", label: "Révision ancienne", checked: false, detail: "" }
+            ]},
+            { name: "Maghreb", tasks: [{ code: "L2", label: "Lecture", checked: false, detail: "" }] },
+            { name: "Soir", tasks: [
+              { code: "A1", label: "Apprentissage", checked: false, detail: "" },
+              { code: "LF", label: "Lecture future", checked: false, detail: "" }
+            ]}
+          ]
+        },
+        {
+          name: "Mercredi",
+          moments: [
+            { name: "Matin", tasks: [{ code: "A2", label: "Apprentissage", checked: false, detail: "" }] },
+            { name: "Midi", tasks: [
+              { code: "RN", label: "Révision nouvelle", checked: false, detail: "" },
+              { code: "RA2", label: "Révision ancienne", checked: false, detail: "" }
+            ]},
+            { name: "Maghreb", tasks: [{ code: "L3", label: "Lecture", checked: false, detail: "" }] },
+            { name: "Soir", tasks: [
+              { code: "A2", label: "Apprentissage", checked: false, detail: "" },
+              { code: "LF", label: "Lecture future", checked: false, detail: "" }
+            ]}
+          ]
+        },
+        {
+          name: "Jeudi",
+          moments: [
+            { name: "Matin", tasks: [{ code: "DA3 + DA4", label: "Découverte approfondie", checked: false, detail: "" }] },
+            { name: "Midi", tasks: [{ code: "C1 + C2", label: "Consolidation", checked: false, detail: "" }] },
+            { name: "Maghreb", tasks: [{ code: "L4", label: "Lecture", checked: false, detail: "" }] },
+            { name: "Soir", tasks: [
+              { code: "C1 + C2", label: "Consolidation", checked: false, detail: "" },
+              { code: "DA3 + DA4", label: "Découverte approfondie", checked: false, detail: "" },
+              { code: "LF", label: "Lecture future", checked: false, detail: "" }
+            ]}
+          ]
+        },
+        {
+          name: "Vendredi",
+          moments: [
+            { name: "Matin", tasks: [{ code: "A3", label: "Apprentissage", checked: false, detail: "" }] },
+            { name: "Midi", tasks: [
+              { code: "RN", label: "Révision nouvelle", checked: false, detail: "" },
+              { code: "RA3", label: "Révision ancienne", checked: false, detail: "" }
+            ]},
+            { name: "Maghreb", tasks: [{ code: "L5", label: "Lecture", checked: false, detail: "" }] },
+            { name: "Soir", tasks: [
+              { code: "A3", label: "Apprentissage", checked: false, detail: "" },
+              { code: "LF", label: "Lecture future", checked: false, detail: "" }
+            ]}
+          ]
+        },
+        {
+          name: "Samedi",
+          moments: [
+            { name: "Matin", tasks: [{ code: "A4", label: "Apprentissage", checked: false, detail: "" }] },
+            { name: "Midi", tasks: [
+              { code: "RN", label: "Révision nouvelle", checked: false, detail: "" },
+              { code: "RA4", label: "Révision ancienne", checked: false, detail: "" }
+            ]},
+            { name: "Maghreb", tasks: [{ code: "L6", label: "Lecture", checked: false, detail: "" }] },
+            { name: "Soir", tasks: [
+              { code: "A4", label: "Apprentissage", checked: false, detail: "" },
+              { code: "LF", label: "Lecture future", checked: false, detail: "" }
+            ]}
+          ]
+        },
+        {
+          name: "Dimanche",
+          moments: [
+            { name: "Matin", tasks: [{ code: "C1 + C2 + C3 + C4", label: "Consolidation", checked: false, detail: "" }] },
+            { name: "Midi", tasks: [{ code: "RA1 + RA2 + RA3 + RA4", label: "Révision ancienne", checked: false, detail: "" }] },
+            { name: "Maghreb", tasks: [{ code: "L7", label: "Lecture", checked: false, detail: "" }] },
+            { name: "Soir", tasks: [
+              { code: "C1 + C2 + C3 + C4", label: "Consolidation", checked: false, detail: "" },
+              { code: "LF", label: "Lecture future", checked: false, detail: "" }
+            ]}
+          ]
+        }
+      ]
+    };
+
+    let state = loadState();
+
+    function loadState() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+
+      const initial = {
+        globalQuranPercent: 0,
+        currentWeekId: 1,
+        weeks: [
+          {
+            id: 1,
+            title: "Semaine 1",
+            createdAt: new Date().toISOString(),
+            ...JSON.parse(JSON.stringify(weekTemplate))
+          }
+        ]
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
+      return initial;
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      renderAll();
+    }
+
+    function showView(viewId) {
+      document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+      document.getElementById(viewId).classList.add("active");
+      renderAll();
+    }
+
+    function getCurrentWeek() {
+      return state.weeks.find(w => w.id === state.currentWeekId) || null;
+    }
+
+    function createNewWeek() {
+      const nextId = state.weeks.length ? Math.max(...state.weeks.map(w => w.id)) + 1 : 1;
+      const newWeek = {
+        id: nextId,
+        title: `Semaine ${nextId}`,
+        createdAt: new Date().toISOString(),
+        ...JSON.parse(JSON.stringify(weekTemplate))
+      };
+      state.weeks.push(newWeek);
+      state.currentWeekId = nextId;
+      saveState();
+      showView("currentWeek");
+    }
+
+    function countWeekProgress(week) {
+      let total = 0;
+      let done = 0;
+
+      week.days.forEach(day => {
+        day.moments.forEach(moment => {
+          moment.tasks.forEach(task => {
+            total++;
+            if (task.checked) done++;
+          });
+        });
+      });
+
+      const percent = total ? Math.round((done / total) * 100) : 0;
+      return { total, done, percent };
+    }
+
+    function countDayProgress(day) {
+      let total = 0;
+      let done = 0;
+
+      day.moments.forEach(moment => {
+        moment.tasks.forEach(task => {
+          total++;
+          if (task.checked) done++;
+        });
+      });
+
+      const percent = total ? Math.round((done / total) * 100) : 0;
+      return { total, done, percent };
+    }
+
+    function countCompletedWeeks() {
+      return state.weeks.filter(w => countWeekProgress(w).percent === 100).length;
+    }
+
+    function updateGoal(field, value) {
+      const week = getCurrentWeek();
+      if (!week) return;
+      week.goals[field] = value;
+      saveState();
+    }
+
+    function updateTaskDetail(dayIndex, momentIndex, taskIndex, value) {
+      const week = getCurrentWeek();
+      if (!week) return;
+      week.days[dayIndex].moments[momentIndex].tasks[taskIndex].detail = value;
+      saveState();
+    }
+
+    function updateTaskChecked(dayIndex, momentIndex, taskIndex, value) {
+      const week = getCurrentWeek();
+      if (!week) return;
+      week.days[dayIndex].moments[momentIndex].tasks[taskIndex].checked = value;
+      saveState();
+    }
+
+    function saveGlobalProgress() {
+      const input = document.getElementById("globalProgressInput");
+      let value = parseInt(input.value || "0", 10);
+      if (isNaN(value)) value = 0;
+      if (value < 0) value = 0;
+      if (value > 100) value = 100;
+      state.globalQuranPercent = value;
+      saveState();
+    }
+
+    function renderDashboard() {
+      const currentWeek = getCurrentWeek();
+      const currentProgress = currentWeek ? countWeekProgress(currentWeek).percent : 0;
+
+      document.getElementById("globalQuranPercent").textContent = `${state.globalQuranPercent}%`;
+      document.getElementById("globalQuranBar").style.width = `${state.globalQuranPercent}%`;
+      document.getElementById("completedWeeksCount").textContent = countCompletedWeeks();
+      document.getElementById("currentWeekPercentBig").textContent = `${currentProgress}%`;
+      document.getElementById("currentWeekBarBig").style.width = `${currentProgress}%`;
+      document.getElementById("globalProgressInput").value = state.globalQuranPercent;
+    }
+
+    function renderCurrentWeek() {
+      const week = getCurrentWeek();
+      const container = document.getElementById("weekContent");
+
+      if (!week) {
+        document.getElementById("currentWeekLabel").textContent = "Aucune semaine créée";
+        document.getElementById("currentWeekPercentPill").textContent = "0%";
+        container.innerHTML = `<div class="empty">Aucune semaine en cours.</div>`;
+        return;
+      }
+
+      const wp = countWeekProgress(week);
+      document.getElementById("currentWeekLabel").textContent = week.title;
+      document.getElementById("currentWeekPercentPill").textContent = `${wp.percent}%`;
+
+      let html = `
+        <div class="week-meta">
+          <div class="card">
+            <div class="stat-label">Progression de la semaine</div>
+            <div class="stat-value">${wp.percent}%</div>
+            <div class="progress"><div style="width:${wp.percent}%"></div></div>
+          </div>
+          <div class="card">
+            <div class="stat-label">Tâches complétées</div>
+            <div class="stat-value">${wp.done}/${wp.total}</div>
+          </div>
+        </div>
+
+        <div class="goal-block">
+          <h3>Objectifs de la semaine</h3>
+          ${["L","A","RN","RA","C","DA"].map(key => `
+            <div class="goal-item">
+              <label for="goal-${key}"><strong>${key}</strong></label>
+              <textarea id="goal-${key}" oninput="updateGoal('${key}', this.value)">${escapeHtml(week.goals[key] || "")}</textarea>
+            </div>
+          `).join("")}
+        </div>
+      `;
+
+      week.days.forEach((day, dayIndex) => {
+        const dp = countDayProgress(day);
+        html += `
+          <div class="day-card">
+            <div class="day-top">
+              <h3>${day.name}</h3>
+              <div class="day-progress">${dp.percent}%</div>
+            </div>
+            <div class="progress"><div style="width:${dp.percent}%"></div></div>
+            <div class="moments" style="margin-top:12px;">
+              ${day.moments.map((moment, momentIndex) => `
+                <div class="moment">
+                  <h4>${moment.name}</h4>
+                  ${moment.tasks.map((task, taskIndex) => `
+                    <div class="task">
+                      <label>
+                        <input
+                          type="checkbox"
+                          ${task.checked ? "checked" : ""}
+                          onchange="updateTaskChecked(${dayIndex}, ${momentIndex}, ${taskIndex}, this.checked)"
+                        >
+                        <span>${escapeHtml(task.code)} — ${escapeHtml(task.label)}</span>
+                      </label>
+                      <input
+                        type="text"
+                        value="${escapeHtml(task.detail || "")}"
+                        placeholder="Préciser ici"
+                        oninput="updateTaskDetail(${dayIndex}, ${momentIndex}, ${taskIndex}, this.value)"
+                      >
+                    </div>
+                  `).join("")}
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function renderHistory() {
+      const container = document.getElementById("historyContent");
+
+      if (!state.weeks.length) {
+        container.innerHTML = `<div class="empty">Aucune semaine enregistrée.</div>`;
+        return;
+      }
+
+      container.innerHTML = state.weeks
+        .slice()
+        .reverse()
+        .map(week => {
+          const wp = countWeekProgress(week);
+          return `
+            <div class="history-week">
+              <div class="history-week-top">
+                <h3>${escapeHtml(week.title)}</h3>
+                <span class="pill">${wp.percent}%</span>
+              </div>
+              <div class="progress"><div style="width:${wp.percent}%"></div></div>
+              <div class="small-muted" style="margin-top:10px;">${wp.done} tâches sur ${wp.total} réalisées</div>
+            </div>
+          `;
+        }).join("");
+    }
+
+    function renderAll() {
+      renderDashboard();
+      renderCurrentWeek();
+      renderHistory();
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    renderAll();
+  </script>
 </body>
-</html>  
+</html>
