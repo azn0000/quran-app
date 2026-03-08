@@ -775,6 +775,7 @@ function makeNewWeek(id, startDate){
     title: weekTitleFromDate(startDate || new Date().toISOString().slice(0,10)),
     createdAt:new Date().toISOString(),
     objectives,
+    lfObjective:{startSurah:1,startAyah:1,endSurah:1,endAyah:1},
     freeNotes:{LF:""},
     taskState:{},
     celebrations:{days:{},week:false}
@@ -789,6 +790,12 @@ function loadState(){
     if(!parsed.selectedSurah) parsed.selectedSurah = 1;
     if(!parsed.mappingFilter) parsed.mappingFilter = "all";
     if(!parsed.pendingWeekDate) parsed.pendingWeekDate = "";
+    if(!parsed.weeks) parsed.weeks = [];
+    parsed.weeks.forEach(week=>{
+      if(!week.lfObjective) week.lfObjective = {startSurah:1,startAyah:1,endSurah:1,endAyah:1};
+      if(!week.freeNotes) week.freeNotes = {LF:""};
+      if(!week.freeNotes.LF) week.freeNotes.LF = "";
+    });
     return parsed;
   }
   const initial = {
@@ -865,10 +872,35 @@ function createWeekFromDate(){
   showView("objectives");
 }
 
+function validateWeekCreation(){
+  createWeekFromDate();
+}
+
 function selectWeek(id){
   state.currentWeekId = Number(id);
   saveState();
   showView("week");
+}
+
+function deleteWeek(id){
+  const week = state.weeks.find(w => w.id === Number(id));
+  if(!week) return;
+
+  const ok = window.confirm(`Supprimer ${week.title} de l’historique ?`);
+  if(!ok) return;
+
+  state.weeks = state.weeks.filter(w => w.id !== Number(id));
+
+  if(!state.weeks.length){
+    const replacement = makeNewWeek(1);
+    state.weeks = [replacement];
+    state.currentWeekId = replacement.id;
+  } else if(!state.weeks.some(w => w.id === state.currentWeekId)){
+    state.currentWeekId = state.weeks[0].id;
+  }
+
+  saveState();
+  showToast("Semaine supprimée.");
 }
 
 function surahOptions(selected){
@@ -1007,12 +1039,24 @@ function updateFreeNote(field, value){
   saveState();
 }
 
+function updateLFRange(field, value){
+  const week = getWeek();
+  if(!week) return;
+  week.lfObjective[field] = Number(value);
+  if(field === "startSurah") week.lfObjective.startAyah = clampAyah(week.lfObjective.startSurah, week.lfObjective.startAyah);
+  if(field === "endSurah") week.lfObjective.endAyah = clampAyah(week.lfObjective.endSurah, week.lfObjective.endAyah);
+  if(field === "startAyah") week.lfObjective.startAyah = clampAyah(week.lfObjective.startSurah, week.lfObjective.startAyah);
+  if(field === "endAyah") week.lfObjective.endAyah = clampAyah(week.lfObjective.endSurah, week.lfObjective.endAyah);
+  saveState();
+}
+
 function taskId(day, moment, itemIndex){
   return `${day}__${moment}__${itemIndex}`;
 }
 
 function weekTaskSummary(week, item){
   if(item.type === "free"){
+    if(week.lfObjective && isValidRange(week.lfObjective)) return `${item.code} — ${formatRange(week.lfObjective)}`;
     const note = week.freeNotes.LF || "";
     return note ? `${item.code} — ${note}` : `${item.code} — ${item.label}`;
   }
@@ -1333,7 +1377,7 @@ function renderObjectives(){
         </div>
       </div>
       <div class="footer-actions">
-        <button onclick="createWeekFromDate()">Créer la semaine</button>
+        <button onclick="validateWeekCreation()">Valider la création de la semaine</button>
         <button class="secondary" onclick="cancelPendingWeek()">Annuler</button>
       </div>
     </div>
@@ -1439,8 +1483,31 @@ function renderObjectives(){
   html += `
     <div class="objective-card">
       <div class="objective-head"><h3>LF — Lecture future</h3></div>
-      <label>Contenu libre</label>
-      <textarea oninput="updateFreeNote('LF', this.value)">${escapeHtml(week.freeNotes.LF || "")}</textarea>
+      <div class="row">
+        <div>
+          <label>Début sourate</label>
+          <select onchange="updateLFRange('startSurah',this.value)">${surahOptions(Number(week.lfObjective.startSurah))}</select>
+        </div>
+        <div>
+          <label>Début verset</label>
+          <select onchange="updateLFRange('startAyah',this.value)">
+            ${ayahOptions(week.lfObjective.startSurah, week.lfObjective.startAyah)}
+          </select>
+        </div>
+        <div>
+          <label>Fin sourate</label>
+          <select onchange="updateLFRange('endSurah',this.value)">${surahOptions(Number(week.lfObjective.endSurah))}</select>
+        </div>
+        <div>
+          <label>Fin verset</label>
+          <select onchange="updateLFRange('endAyah',this.value)">
+            ${ayahOptions(week.lfObjective.endSurah, week.lfObjective.endAyah)}
+          </select>
+        </div>
+      </div>
+      <div class="summary-box">
+        ${isValidRange(week.lfObjective) ? `<strong>${formatRange(week.lfObjective)}</strong> — ${rangeCount(week.lfObjective)} verset(s)` : `<span style="color:#b45309;font-weight:700;">Plage invalide.</span>`}
+      </div>
     </div>
   `;
 
@@ -1530,6 +1597,7 @@ function renderHistory(){
           <div class="subtle" style="margin-top:8px;">${stats.done} / ${stats.total} tâches réalisées</div>
           <div class="history-actions">
             <button onclick="selectWeek(${week.id})">Ouvrir cette semaine</button>
+            <button class="secondary" onclick="deleteWeek(${week.id})">Supprimer</button>
           </div>
         </div>
       `;
