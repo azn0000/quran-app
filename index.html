@@ -715,8 +715,8 @@ const SURAHS = [
 ];
 
 const TOTAL_VERSES = 6236;
-const STORAGE_KEY = "quran_tracker_v11";
-const LEGACY_KEYS = ["quran_tracker_v10", "quran_tracker_v9", "quran_tracker_v8"];
+const STORAGE_KEY = "quran_tracker_v12";
+const LEGACY_KEYS = ["quran_tracker_v11", "quran_tracker_v10", "quran_tracker_v9", "quran_tracker_v8"];
 const FOUR_WEEKS_MS = 28 * 24 * 60 * 60 * 1000;
 
 const WEEK_DAYS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
@@ -811,14 +811,19 @@ function makeDefaultLF(){
 }
 
 function addDaysToDate(dateStr, days){
-  const d = new Date(dateStr + "T00:00:00");
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const d = new Date(year, month - 1, day);
   d.setDate(d.getDate() + days);
-  return d.toISOString().slice(0,10);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
 }
 
 function formatDate(dateStr){
   if(!dateStr) return "";
-  const d = new Date(dateStr + "T00:00:00");
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const d = new Date(year, month - 1, day);
   return d.toLocaleDateString("fr-FR");
 }
 
