@@ -714,9 +714,72 @@ const SURAHS = [
   {n:112,name:"Al-Ikhlas",v:4},{n:113,name:"Al-Falaq",v:5},{n:114,name:"An-Nas",v:6}
 ];
 
+const HIZB_RANGES = [
+  {hizb:1,startSurah:1,startAyah:1,endSurah:2,endAyah:74},
+  {hizb:2,startSurah:2,startAyah:75,endSurah:2,endAyah:141},
+  {hizb:3,startSurah:2,startAyah:142,endSurah:2,endAyah:202},
+  {hizb:4,startSurah:2,startAyah:203,endSurah:2,endAyah:252},
+  {hizb:5,startSurah:2,startAyah:253,endSurah:3,endAyah:14},
+  {hizb:6,startSurah:3,startAyah:15,endSurah:3,endAyah:91},
+  {hizb:7,startSurah:3,startAyah:92,endSurah:3,endAyah:170},
+  {hizb:8,startSurah:3,startAyah:171,endSurah:4,endAyah:23},
+  {hizb:9,startSurah:4,startAyah:24,endSurah:4,endAyah:87},
+  {hizb:10,startSurah:4,startAyah:88,endSurah:4,endAyah:147},
+  {hizb:11,startSurah:4,startAyah:148,endSurah:5,endAyah:26},
+  {hizb:12,startSurah:5,startAyah:27,endSurah:5,endAyah:81},
+  {hizb:13,startSurah:5,startAyah:82,endSurah:6,endAyah:35},
+  {hizb:14,startSurah:6,startAyah:36,endSurah:6,endAyah:110},
+  {hizb:15,startSurah:6,startAyah:111,endSurah:6,endAyah:165},
+  {hizb:16,startSurah:7,startAyah:1,endSurah:7,endAyah:87},
+  {hizb:17,startSurah:7,startAyah:88,endSurah:7,endAyah:170},
+  {hizb:18,startSurah:7,startAyah:171,endSurah:8,endAyah:40},
+  {hizb:19,startSurah:8,startAyah:41,endSurah:9,endAyah:33},
+  {hizb:20,startSurah:9,startAyah:34,endSurah:9,endAyah:92},
+  {hizb:21,startSurah:9,startAyah:93,endSurah:10,endAyah:25},
+  {hizb:22,startSurah:10,startAyah:26,endSurah:11,endAyah:5},
+  {hizb:23,startSurah:11,startAyah:6,endSurah:11,endAyah:83},
+  {hizb:24,startSurah:11,startAyah:84,endSurah:12,endAyah:52},
+  {hizb:25,startSurah:12,startAyah:53,endSurah:13,endAyah:18},
+  {hizb:26,startSurah:13,startAyah:19,endSurah:15,endAyah:1},
+  {hizb:27,startSurah:15,startAyah:2,endSurah:16,endAyah:50},
+  {hizb:28,startSurah:16,startAyah:51,endSurah:16,endAyah:128},
+  {hizb:29,startSurah:17,startAyah:1,endSurah:17,endAyah:98},
+  {hizb:30,startSurah:17,startAyah:99,endSurah:18,endAyah:74},
+  {hizb:31,startSurah:18,startAyah:75,endSurah:19,endAyah:98},
+  {hizb:32,startSurah:20,startAyah:1,endSurah:20,endAyah:135},
+  {hizb:33,startSurah:21,startAyah:1,endSurah:21,endAyah:112},
+  {hizb:34,startSurah:22,startAyah:1,endSurah:22,endAyah:78},
+  {hizb:35,startSurah:23,startAyah:1,endSurah:24,endAyah:20},
+  {hizb:36,startSurah:24,startAyah:21,endSurah:25,endAyah:20},
+  {hizb:37,startSurah:25,startAyah:21,endSurah:26,endAyah:110},
+  {hizb:38,startSurah:26,startAyah:111,endSurah:27,endAyah:55},
+  {hizb:39,startSurah:27,startAyah:56,endSurah:28,endAyah:50},
+  {hizb:40,startSurah:28,startAyah:51,endSurah:29,endAyah:45},
+  {hizb:41,startSurah:29,startAyah:46,endSurah:31,endAyah:21},
+  {hizb:42,startSurah:31,startAyah:22,endSurah:33,endAyah:30},
+  {hizb:43,startSurah:33,startAyah:31,endSurah:34,endAyah:23},
+  {hizb:44,startSurah:34,startAyah:24,endSurah:36,endAyah:27},
+  {hizb:45,startSurah:36,startAyah:28,endSurah:37,endAyah:144},
+  {hizb:46,startSurah:37,startAyah:145,endSurah:39,endAyah:31},
+  {hizb:47,startSurah:39,startAyah:32,endSurah:40,endAyah:40},
+  {hizb:48,startSurah:40,startAyah:41,endSurah:41,endAyah:46},
+  {hizb:49,startSurah:41,startAyah:47,endSurah:43,endAyah:23},
+  {hizb:50,startSurah:43,startAyah:24,endSurah:45,endAyah:37},
+  {hizb:51,startSurah:46,startAyah:1,endSurah:48,endAyah:17},
+  {hizb:52,startSurah:48,startAyah:18,endSurah:51,endAyah:30},
+  {hizb:53,startSurah:51,startAyah:31,endSurah:54,endAyah:55},
+  {hizb:54,startSurah:55,startAyah:1,endSurah:57,endAyah:29},
+  {hizb:55,startSurah:58,startAyah:1,endSurah:61,endAyah:14},
+  {hizb:56,startSurah:62,startAyah:1,endSurah:66,endAyah:12},
+  {hizb:57,startSurah:67,startAyah:1,endSurah:71,endAyah:28},
+  {hizb:58,startSurah:72,startAyah:1,endSurah:77,endAyah:50},
+  {hizb:59,startSurah:78,startAyah:1,endSurah:86,endAyah:17},
+  {hizb:60,startSurah:87,startAyah:1,endSurah:114,endAyah:6}
+];
+
 const TOTAL_VERSES = 6236;
-const STORAGE_KEY = "quran_tracker_v12";
-const LEGACY_KEYS = ["quran_tracker_v11", "quran_tracker_v10", "quran_tracker_v9", "quran_tracker_v8"];
+const STORAGE_KEY = "quran_tracker_v13";
+const LEGACY_KEYS = ["quran_tracker_v12", "quran_tracker_v11", "quran_tracker_v10", "quran_tracker_v9", "quran_tracker_v8"];
 const FOUR_WEEKS_MS = 28 * 24 * 60 * 60 * 1000;
 
 const WEEK_DAYS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
@@ -797,7 +860,8 @@ function makeDefaultObjective(key){
     key,
     mode:"auto",
     range:{startSurah:1,startAyah:1,endSurah:1,endAyah:1},
-    parts:Array.from({length:count},()=>({startSurah:1,startAyah:1,endSurah:1,endAyah:1}))
+    parts:Array.from({length:count},()=>({startSurah:1,startAyah:1,endSurah:1,endAyah:1})),
+    startHizb: 1
   };
 }
 
@@ -844,6 +908,42 @@ function createVerseProgress(){
   return progress;
 }
 
+function getSurahNameByNumber(number){
+  return SURAHS.find(s => s.n === Number(number))?.name || `Sourate ${number}`;
+}
+
+function clampHizb(value){
+  let v = Number(value || 1);
+  if(v < 1) v = 1;
+  if(v > 60) v = 60;
+  return v;
+}
+
+function getHizbInfo(hizbNumber){
+  return HIZB_RANGES.find(h => h.hizb === Number(hizbNumber)) || null;
+}
+
+function formatHizbLabel(hizbNumber){
+  const info = getHizbInfo(hizbNumber);
+  if(!info) return `Hizb ${hizbNumber}`;
+  return `Hizb ${info.hizb} — ${getSurahNameByNumber(info.startSurah)} ${info.startAyah} → ${getSurahNameByNumber(info.endSurah)} ${info.endAyah}`;
+}
+
+function hizbOptions(selected){
+  let html = "";
+  for(let i = 1; i <= 60; i++){
+    html += `<option value="${i}" ${i === Number(selected) ? "selected" : ""}>${escapeHtml(formatHizbLabel(i))}</option>`;
+  }
+  return html;
+}
+
+function updateLStartHizb(value){
+  const week = getWeek();
+  if(!week) return;
+  week.objectives.L.startHizb = clampHizb(value);
+  saveState();
+}
+
 function normalizeWeek(week){
   if(!week.objectives) week.objectives = {};
   Object.keys(OBJECTIVE_CONFIG).forEach(k=>{
@@ -868,6 +968,10 @@ function normalizeWeek(week){
     }
 
     if(!week.objectives[k].mode) week.objectives[k].mode = "auto";
+
+    if(k === "L"){
+      week.objectives[k].startHizb = clampHizb(week.objectives[k].startHizb || 1);
+    }
   });
 
   if(!week.lf) week.lf = makeDefaultLF();
@@ -1173,6 +1277,16 @@ function autoSplitRange(range, partsCount){
 }
 
 function objectiveResolvedParts(obj){
+  if(obj.key === "L"){
+    const startHizb = clampHizb(obj.startHizb || 1);
+    return Array.from({length: 7}, (_, i) => {
+      const hizbNumber = startHizb + i;
+      if(hizbNumber > 60) return null;
+      const info = getHizbInfo(hizbNumber);
+      return info ? deepClone(info) : null;
+    });
+  }
+
   if(obj.mode === "auto") return autoSplitRange(obj.range, OBJECTIVE_CONFIG[obj.key].parts);
   return obj.parts;
 }
@@ -1282,9 +1396,15 @@ function weekTaskSummary(week, item){
     if(!week.lf || !isValidRange(week.lf)) return `LF — non défini`;
     return `LF — ${formatRange(week.lf)}`;
   }
+
   const parts = objectiveResolvedParts(week.objectives[item.key]);
   const part = parts[item.index];
   if(!part) return `${item.key}${item.index+1} — non défini`;
+
+  if(item.key === "L"){
+    return `L${item.index + 1} — ${formatHizbLabel(part.hizb)}`;
+  }
+
   const code = OBJECTIVE_CONFIG[item.key].parts === 1 ? item.key : `${item.key}${item.index+1}`;
   return `${code} — ${formatRange(part)}`;
 }
@@ -1679,6 +1799,46 @@ function renderObjectives(){
   `;
 
   Object.keys(OBJECTIVE_CONFIG).forEach(key=>{
+    if(key === "L"){
+      const obj = week.objectives.L;
+      const parts = objectiveResolvedParts(obj);
+
+      html += `
+        <div class="objective-card">
+          <div class="objective-head">
+            <h3>L — Lecture</h3>
+            <span class="week-badge">Découpage par hizb</span>
+          </div>
+
+          <div class="part-card">
+            <h4>Choix du hizb de départ</h4>
+            <div class="row">
+              <div>
+                <label>Hizb de départ</label>
+                <select onchange="updateLStartHizb(this.value)">
+                  ${hizbOptions(obj.startHizb || 1)}
+                </select>
+              </div>
+            </div>
+
+            <div class="summary-box">
+              La lecture journalière se génère automatiquement hizb par hizb.
+            </div>
+          </div>
+
+          <div class="part-card">
+            <h4>Découpage automatique</h4>
+            ${parts.map((p, i) => `
+              <div class="summary-box" style="margin-bottom:8px;">
+                <strong>L${i + 1}</strong> — ${p ? escapeHtml(formatHizbLabel(p.hizb)) : "non défini"}
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      `;
+      return;
+    }
+
     if(key === "DA" || key === "C"){
       html += renderDerivedObjectiveCard(key, week);
       return;
