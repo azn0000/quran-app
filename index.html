@@ -507,7 +507,6 @@
       <button onclick="showView('week')">Semaine en cours</button>
       <button onclick="showView('mapping')">Cartographie du Qur’an</button>
       <button onclick="showView('history')">Historique</button>
-      <button class="secondary" onclick="createNewWeek()">Nouvelle semaine</button>
     </div>
   </div>
 
@@ -539,11 +538,37 @@
 
     <div class="grid">
       <div class="card">
-        <h2 style="margin-top:0;">Accès rapide</h2>
+        <h2 style="margin-top:0;">Créer une semaine</h2>
+        <div class="row">
+          <div>
+            <label>Date de début</label>
+            <input type="date" id="dashboardWeekStart" onchange="setPendingWeekDate(this.value)">
+          </div>
+          <div>
+            <label>Premier jour de semaine</label>
+            <select id="dashboardFirstDay" onchange="setPendingWeekFirstDay(this.value)">
+              <option value="Lundi">Lundi</option>
+              <option value="Mardi">Mardi</option>
+              <option value="Mercredi">Mercredi</option>
+              <option value="Jeudi">Jeudi</option>
+              <option value="Vendredi">Vendredi</option>
+              <option value="Samedi">Samedi</option>
+              <option value="Dimanche">Dimanche</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Reprendre les objectifs de la semaine actuelle</label>
+            <select id="dashboardCopyWeek" onchange="setCopyObjectivesToNewWeek(this.value === 'true')">
+              <option value="true">Oui</option>
+              <option value="false">Non</option>
+            </select>
+          </div>
+        </div>
         <div class="footer-actions">
-          <button onclick="showView('week')">Aller à la semaine en cours</button>
-          <button onclick="showView('mapping')">Ouvrir la cartographie</button>
-          <button class="secondary" onclick="showView('history')">Voir l’historique</button>
+          <button onclick="createWeekFromPending()">Créer la semaine</button>
+          <button class="secondary" onclick="resetPendingWeek()">Annuler</button>
         </div>
       </div>
 
@@ -690,8 +715,11 @@ const SURAHS = [
 ];
 
 const TOTAL_VERSES = 6236;
-const STORAGE_KEY = "quran_tracker_v9";
+const STORAGE_KEY = "quran_tracker_v11";
+const LEGACY_KEYS = ["quran_tracker_v10", "quran_tracker_v9", "quran_tracker_v8"];
 const FOUR_WEEKS_MS = 28 * 24 * 60 * 60 * 1000;
+
+const WEEK_DAYS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 
 const OBJECTIVE_CONFIG = {
   L:{parts:7,title:"Lecture"},
@@ -702,7 +730,7 @@ const OBJECTIVE_CONFIG = {
   DA:{parts:2,title:"Découverte approfondie"}
 };
 
-const scheduleTemplate = [
+const baseScheduleTemplate = [
   {day:"Lundi", moments:[
     {name:"Matin", items:[{type:"part", key:"DA", index:0}]},
     {name:"Midi", items:[{type:"part", key:"C", index:0},{type:"part", key:"RN", index:0},{type:"part", key:"RA", index:0}]},
@@ -746,6 +774,23 @@ const scheduleTemplate = [
   ]}
 ];
 
+function deepClone(obj){
+  return JSON.parse(JSON.stringify(obj));
+}
+
+function rotateArray(arr, startIndex){
+  return arr.slice(startIndex).concat(arr.slice(0, startIndex));
+}
+
+function buildScheduleForFirstDay(firstDay){
+  const idx = WEEK_DAYS.indexOf(firstDay);
+  if(idx === -1) return deepClone(baseScheduleTemplate);
+
+  const rotatedDays = rotateArray(WEEK_DAYS, idx);
+  const byDay = Object.fromEntries(baseScheduleTemplate.map(x => [x.day, deepClone(x)]));
+  return rotatedDays.map(dayName => byDay[dayName]);
+}
+
 function makeDefaultObjective(key){
   const count = OBJECTIVE_CONFIG[key].parts;
   return {
@@ -765,10 +810,21 @@ function makeDefaultLF(){
   };
 }
 
-function weekTitleFromDate(dateStr){
-  if(!dateStr) return "Semaine sans date";
+function addDaysToDate(dateStr, days){
   const d = new Date(dateStr + "T00:00:00");
-  return `Semaine du ${d.toLocaleDateString("fr-FR")}`;
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0,10);
+}
+
+function formatDate(dateStr){
+  if(!dateStr) return "";
+  const d = new Date(dateStr + "T00:00:00");
+  return d.toLocaleDateString("fr-FR");
+}
+
+function weekTitleFromDates(startDate, endDate){
+  if(!startDate || !endDate) return "Semaine sans date";
+  return `Semaine du ${formatDate(startDate)} au ${formatDate(endDate)}`;
 }
 
 function createVerseProgress(){
@@ -812,23 +868,57 @@ function normalizeWeek(week){
   if(!week.lf) week.lf = makeDefaultLF();
   if(!week.taskState) week.taskState = {};
   if(!week.celebrations) week.celebrations = {days:{},week:false};
+  if(!week.firstDay) week.firstDay = "Lundi";
+  if(!week.startDate) week.startDate = "";
+  if(!week.endDate && week.startDate) week.endDate = addDaysToDate(week.startDate, 6);
+  if(!week.title) week.title = week.startDate && week.endDate ? weekTitleFromDates(week.startDate, week.endDate) : "Semaine sans date";
 
   return week;
 }
 
-function makeNewWeek(id, startDate){
+function makeEmptyState(){
+  return {
+    currentWeekId:null,
+    selectedSurah:1,
+    mappingFilter:"all",
+    pendingWeekDate:"",
+    pendingWeekFirstDay:"Lundi",
+    copyObjectivesToNewWeek:true,
+    weeks:[],
+    verseProgress:createVerseProgress()
+  };
+}
+
+function makeNewWeek(id, startDate, firstDay = "Lundi"){
   const objectives = {};
   Object.keys(OBJECTIVE_CONFIG).forEach(k => objectives[k] = makeDefaultObjective(k));
+  const endDate = addDaysToDate(startDate, 6);
+
   return {
     id,
-    startDate: startDate || new Date().toISOString().slice(0,10),
-    title: weekTitleFromDate(startDate || new Date().toISOString().slice(0,10)),
+    startDate,
+    endDate,
+    firstDay,
+    title: weekTitleFromDates(startDate, endDate),
     createdAt:new Date().toISOString(),
     objectives,
     lf: makeDefaultLF(),
     taskState:{},
     celebrations:{days:{},week:false}
   };
+}
+
+function duplicateWeekBase(sourceWeek, newId, startDate, firstDay){
+  const cloned = deepClone(sourceWeek);
+  cloned.id = newId;
+  cloned.startDate = startDate;
+  cloned.endDate = addDaysToDate(startDate, 6);
+  cloned.firstDay = firstDay;
+  cloned.title = weekTitleFromDates(cloned.startDate, cloned.endDate);
+  cloned.createdAt = new Date().toISOString();
+  cloned.taskState = {};
+  cloned.celebrations = {days:{},week:false};
+  return normalizeWeek(cloned);
 }
 
 function loadState(){
@@ -838,40 +928,43 @@ function loadState(){
     if(!parsed.verseProgress) parsed.verseProgress = createVerseProgress();
     if(!parsed.selectedSurah) parsed.selectedSurah = 1;
     if(!parsed.mappingFilter) parsed.mappingFilter = "all";
-    if(!parsed.pendingWeekDate) parsed.pendingWeekDate = "";
-    parsed.weeks = (parsed.weeks || []).map(normalizeWeek);
+    if(typeof parsed.pendingWeekDate !== "string") parsed.pendingWeekDate = "";
+    if(!parsed.pendingWeekFirstDay) parsed.pendingWeekFirstDay = "Lundi";
+    if(typeof parsed.copyObjectivesToNewWeek !== "boolean") parsed.copyObjectivesToNewWeek = true;
+    if(!Array.isArray(parsed.weeks)) parsed.weeks = [];
+    parsed.weeks = parsed.weeks.map(normalizeWeek);
+    if(typeof parsed.currentWeekId === "undefined") parsed.currentWeekId = parsed.weeks[0]?.id ?? null;
     return parsed;
   }
 
-  const legacyRaw = localStorage.getItem("quran_tracker_v8");
-  if(legacyRaw){
-    const legacy = JSON.parse(legacyRaw);
-    if(!legacy.verseProgress) legacy.verseProgress = createVerseProgress();
-    if(!legacy.selectedSurah) legacy.selectedSurah = 1;
-    if(!legacy.mappingFilter) legacy.mappingFilter = "all";
-    if(!legacy.pendingWeekDate) legacy.pendingWeekDate = "";
-    legacy.weeks = (legacy.weeks || []).map(normalizeWeek);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(legacy));
-    return legacy;
+  for(const legacyKey of LEGACY_KEYS){
+    const legacyRaw = localStorage.getItem(legacyKey);
+    if(legacyRaw){
+      const legacy = JSON.parse(legacyRaw);
+      if(!legacy.verseProgress) legacy.verseProgress = createVerseProgress();
+      if(!legacy.selectedSurah) legacy.selectedSurah = 1;
+      if(!legacy.mappingFilter) legacy.mappingFilter = "all";
+      if(typeof legacy.pendingWeekDate !== "string") legacy.pendingWeekDate = "";
+      if(!legacy.pendingWeekFirstDay) legacy.pendingWeekFirstDay = "Lundi";
+      if(typeof legacy.copyObjectivesToNewWeek !== "boolean") legacy.copyObjectivesToNewWeek = true;
+      if(!Array.isArray(legacy.weeks)) legacy.weeks = [];
+      legacy.weeks = legacy.weeks.map(normalizeWeek);
+      if(typeof legacy.currentWeekId === "undefined") legacy.currentWeekId = legacy.weeks[0]?.id ?? null;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(legacy));
+      return legacy;
+    }
   }
 
-  const initial = {
-    currentWeekId:1,
-    selectedSurah:1,
-    mappingFilter:"all",
-    pendingWeekDate:"",
-    weeks:[makeNewWeek(1)],
-    verseProgress:createVerseProgress()
-  };
+  const initial = makeEmptyState();
   localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
   return initial;
 }
 
 let state = loadState();
 
-function saveState(){
+function saveState(render = true){
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  renderAll();
+  if(render) renderAll();
 }
 
 function showView(id){
@@ -884,48 +977,73 @@ function getWeek(){
   return state.weeks.find(w=>w.id===state.currentWeekId) || null;
 }
 
-function createNewWeek(){
-  const nextId = state.weeks.length ? Math.max(...state.weeks.map(w=>w.id))+1 : 1;
-  const week = makeNewWeek(nextId);
-  state.weeks.push(week);
-  state.currentWeekId = nextId;
-  state.pendingWeekDate = "";
-  saveState();
-  showView("objectives");
+function getNextWeekId(){
+  return state.weeks.length ? Math.max(...state.weeks.map(w=>w.id))+1 : 1;
 }
 
 function setPendingWeekDate(value){
-  state.pendingWeekDate = value;
+  state.pendingWeekDate = value || "";
   saveState();
 }
 
-function cancelPendingWeek(){
+function setPendingWeekFirstDay(value){
+  state.pendingWeekFirstDay = value || "Lundi";
+  saveState();
+}
+
+function setCopyObjectivesToNewWeek(value){
+  state.copyObjectivesToNewWeek = !!value;
+  saveState();
+}
+
+function resetPendingWeek(){
   state.pendingWeekDate = "";
+  state.pendingWeekFirstDay = "Lundi";
   saveState();
-  showToast("Création de semaine annulée.");
+  showToast("Création annulée.");
 }
 
-function createWeekFromDate(){
-  const dateValue = state.pendingWeekDate;
-  if(!dateValue) return;
+function saveCurrentWeek(){
+  const week = getWeek();
+  if(!week){
+    showToast("Aucune semaine active.");
+    return;
+  }
+  week.title = weekTitleFromDates(week.startDate, week.endDate);
+  saveState();
+  showToast("Semaine enregistrée.");
+}
 
-  const existing = state.weeks.find(w => w.startDate === dateValue);
+function createWeekFromPending(){
+  if(!state.pendingWeekDate){
+    showToast("Choisis d’abord une date de début.");
+    return;
+  }
+
+  const dateValue = state.pendingWeekDate;
+  const firstDay = state.pendingWeekFirstDay || "Lundi";
+
+  const existing = state.weeks.find(w => w.startDate === dateValue && w.firstDay === firstDay);
   if(existing){
     state.currentWeekId = existing.id;
-    state.pendingWeekDate = "";
     saveState();
     showToast("Cette semaine existe déjà.");
     showView("week");
     return;
   }
 
-  const nextId = state.weeks.length ? Math.max(...state.weeks.map(w=>w.id))+1 : 1;
-  const week = makeNewWeek(nextId, dateValue);
+  const nextId = getNextWeekId();
+  const current = getWeek();
+
+  const week = state.copyObjectivesToNewWeek && current
+    ? duplicateWeekBase(current, nextId, dateValue, firstDay)
+    : makeNewWeek(nextId, dateValue, firstDay);
+
   state.weeks.push(week);
-  state.currentWeekId = nextId;
+  state.currentWeekId = week.id;
   state.pendingWeekDate = "";
   saveState();
-  showToast("Nouvelle semaine créée.");
+  showToast("Semaine créée.");
   showView("objectives");
 }
 
@@ -940,9 +1058,7 @@ function deleteWeek(id){
   state.weeks = state.weeks.filter(w => w.id !== numericId);
 
   if(!state.weeks.length){
-    const fresh = makeNewWeek(1);
-    state.weeks = [fresh];
-    state.currentWeekId = fresh.id;
+    state.currentWeekId = null;
   } else if(state.currentWeekId === numericId){
     state.currentWeekId = state.weeks[0].id;
   }
@@ -955,10 +1071,10 @@ function deleteAllWeeks(){
   const ok = confirm("Voulez-vous vraiment supprimer toutes les semaines historiques ?");
   if(!ok) return;
 
-  const fresh = makeNewWeek(1);
-  state.weeks = [fresh];
-  state.currentWeekId = fresh.id;
+  state.weeks = [];
+  state.currentWeekId = null;
   state.pendingWeekDate = "";
+  state.pendingWeekFirstDay = "Lundi";
   saveState();
   showToast("Historique supprimé.");
   showView("history");
@@ -1147,6 +1263,11 @@ function syncCFromA(){
   syncDerivedObjectiveFromA("C");
 }
 
+function getScheduleForWeek(week){
+  if(!week) return [];
+  return buildScheduleForFirstDay(week.firstDay || "Lundi");
+}
+
 function taskId(day, moment, itemIndex){
   return `${day}__${moment}__${itemIndex}`;
 }
@@ -1164,8 +1285,9 @@ function weekTaskSummary(week, item){
 }
 
 function countWeekStats(week){
+  const schedule = getScheduleForWeek(week);
   let total = 0, done = 0;
-  scheduleTemplate.forEach(day=>{
+  schedule.forEach(day=>{
     day.moments.forEach(moment=>{
       moment.items.forEach((item, idx)=>{
         total++;
@@ -1354,12 +1476,14 @@ function updateTaskCheck(id, checked, dayName){
   const week = getWeek();
   if(!week) return;
 
-  const beforeDay = countDayStats(week, scheduleTemplate.find(d=>d.day===dayName)).percent;
+  const schedule = getScheduleForWeek(week);
+  const dayObj = schedule.find(d=>d.day===dayName);
+  const beforeDay = countDayStats(week, dayObj).percent;
   const beforeWeek = countWeekStats(week).percent;
 
   week.taskState[id] = checked;
 
-  const afterDay = countDayStats(week, scheduleTemplate.find(d=>d.day===dayName)).percent;
+  const afterDay = countDayStats(week, dayObj).percent;
   const afterWeek = countWeekStats(week).percent;
 
   if(afterDay === 100 && beforeDay < 100 && !week.celebrations.days[dayName]){
@@ -1425,7 +1549,15 @@ function updateWeekDate(value){
   const week = getWeek();
   if(!week || !value) return;
   week.startDate = value;
-  week.title = weekTitleFromDate(value);
+  week.endDate = addDaysToDate(value, 6);
+  week.title = weekTitleFromDates(week.startDate, week.endDate);
+  saveState();
+}
+
+function updateWeekFirstDay(value){
+  const week = getWeek();
+  if(!week) return;
+  week.firstDay = value;
   saveState();
 }
 
@@ -1441,6 +1573,15 @@ function renderDashboard(){
   document.getElementById("weekPercentBig").textContent = `${stats.percent}%`;
   document.getElementById("weekPercentBarBig").style.width = `${stats.percent}%`;
   document.getElementById("dashboardCurrentWeekLabel").textContent = week ? week.title : "Aucune semaine";
+
+  const startInput = document.getElementById("dashboardWeekStart");
+  const firstDaySelect = document.getElementById("dashboardFirstDay");
+  const copySelect = document.getElementById("dashboardCopyWeek");
+
+  if(startInput) startInput.value = state.pendingWeekDate || "";
+  if(firstDaySelect) firstDaySelect.value = state.pendingWeekFirstDay || "Lundi";
+  if(copySelect) copySelect.value = String(!!state.copyObjectivesToNewWeek);
+
   document.getElementById("completeSurahsCount").textContent = countCompleteSurahs();
 }
 
@@ -1489,7 +1630,9 @@ function renderObjectives(){
   const container = document.getElementById("objectivesContent");
 
   if(!week){
-    container.innerHTML = `<div class="empty">Aucune semaine créée.</div>`;
+    document.getElementById("currentWeekLabelObjectives").textContent = "Aucune semaine";
+    document.getElementById("currentWeekBadgeObjectives").textContent = "0%";
+    container.innerHTML = `<div class="empty">Aucune semaine créée. Commence par créer ta première semaine depuis le tableau de bord.</div>`;
     return;
   }
 
@@ -1500,21 +1643,32 @@ function renderObjectives(){
   let html = `
     <div class="objective-card">
       <div class="objective-head">
-        <h3>Calendrier de la semaine</h3>
+        <h3>Paramètres de la semaine</h3>
       </div>
+
       <div class="row">
         <div>
-          <label>Date de début de la semaine active</label>
+          <label>Date de début</label>
           <input type="date" value="${escapeHtml(week.startDate)}" onchange="updateWeekDate(this.value)">
         </div>
         <div>
-          <label>Créer une autre semaine à partir d’une date</label>
-          <input type="date" value="${escapeHtml(state.pendingWeekDate || "")}" onchange="setPendingWeekDate(this.value)">
+          <label>Date de fin</label>
+          <input type="date" value="${escapeHtml(week.endDate)}" disabled>
+        </div>
+        <div>
+          <label>Premier jour de semaine</label>
+          <select onchange="updateWeekFirstDay(this.value)">
+            ${WEEK_DAYS.map(d => `<option value="${d}" ${d===week.firstDay ? "selected" : ""}>${d}</option>`).join("")}
+          </select>
         </div>
       </div>
+
       <div class="footer-actions">
-        <button onclick="createWeekFromDate()">Valider la création de la semaine</button>
-        <button class="secondary" onclick="cancelPendingWeek()">Annuler</button>
+        <button onclick="saveCurrentWeek()">Enregistrer la semaine en cours</button>
+      </div>
+
+      <div class="summary-box">
+        <strong>${escapeHtml(week.title)}</strong>
       </div>
     </div>
   `;
@@ -1660,12 +1814,16 @@ function renderWeek(){
   const container = document.getElementById("weekContent");
 
   if(!week){
-    container.innerHTML = `<div class="empty">Aucune semaine créée.</div>`;
+    document.getElementById("currentWeekLabelWeek").textContent = "Aucune semaine";
+    document.getElementById("currentWeekBadgeWeek").textContent = "0%";
+    container.innerHTML = `<div class="empty">Aucune semaine active. Crée d’abord une semaine depuis le tableau de bord.</div>`;
     return;
   }
 
   const stats = countWeekStats(week);
-  document.getElementById("currentWeekLabelWeek").textContent = week.title;
+  const schedule = getScheduleForWeek(week);
+
+  document.getElementById("currentWeekLabelWeek").textContent = `${week.title} · Départ : ${week.firstDay}`;
   document.getElementById("currentWeekBadgeWeek").textContent = `${stats.percent}%`;
 
   let html = `
@@ -1678,7 +1836,7 @@ function renderWeek(){
     <div class="days">
   `;
 
-  scheduleTemplate.forEach(day=>{
+  schedule.forEach(day=>{
     const dayStats = countDayStats(week, day);
 
     html += `
@@ -1733,7 +1891,7 @@ function renderHistory(){
             <h3>${escapeHtml(week.title)}</h3>
             <span class="week-badge">${stats.percent}%</span>
           </div>
-          <div class="subtle">${escapeHtml(week.startDate || "")}</div>
+          <div class="subtle">${escapeHtml(week.firstDay)} · ${escapeHtml(week.startDate || "")} → ${escapeHtml(week.endDate || "")}</div>
           <div class="progress"><div style="width:${stats.percent}%"></div></div>
           <div class="subtle" style="margin-top:8px;">${stats.done} / ${stats.total} tâches réalisées</div>
           <div class="history-actions">
@@ -1873,12 +2031,6 @@ function renderMapping(){
       }).join("")}
     </div>
   `;
-}
-
-function formatDate(dateStr){
-  if(!dateStr) return "";
-  const d = new Date(dateStr + "T00:00:00");
-  return d.toLocaleDateString("fr-FR");
 }
 
 function renderAll(){
