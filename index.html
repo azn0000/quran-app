@@ -3,840 +3,1901 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Suivi Qur'an - Semaines</title>
+  <title>Suivi du Qur’an</title>
   <style>
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: #f5f7fb;
-      color: #1f2937;
+    :root{
+      --bg:#f4f1ea;
+      --card:#ffffff;
+      --soft:#faf8f2;
+      --line:#e5e7eb;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --accent:#1f6f5f;
+      --accent2:#2f8e79;
+      --gold:#a67c2e;
+      --gray:#d1d5db;
+      --yellow:#facc15;
+      --green-dark:#166534;
+      --green-light:#bbf7d0;
+      --shadow:0 8px 24px rgba(0,0,0,.08);
     }
 
-    .container {
-      max-width: 1250px;
-      margin: 0 auto;
-      padding: 24px;
+    * { box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family:Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
     }
 
-    h1, h2, h3, h4 { margin-top: 0; }
-
-    .card {
-      background: #fff;
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-      margin-bottom: 20px;
+    .app{
+      max-width:1320px;
+      margin:0 auto;
+      padding:16px;
     }
 
-    .grid {
-      display: grid;
-      gap: 16px;
+    .topbar,.card,.objective-card,.day-card,.history-card,.surah-card,.toast,.verse-panel{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:18px;
+      box-shadow:var(--shadow);
     }
 
-    .grid-2 {
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    .topbar{
+      padding:18px;
+      margin-bottom:18px;
     }
 
-    .grid-3 {
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    .topbar h1{
+      margin:0 0 8px;
+      color:var(--accent);
+      font-size:28px;
     }
 
-    label {
-      display: block;
-      font-size: 14px;
-      font-weight: 700;
-      margin-bottom: 6px;
+    .topbar p{
+      margin:0;
+      color:var(--muted);
     }
 
-    input[type="text"],
-    select,
-    textarea {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid #d1d5db;
-      border-radius: 10px;
-      font-size: 14px;
-      background: #fff;
+    .menu,.footer-actions,.mode-switch,.history-actions,.filter-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:14px;
     }
 
-    textarea {
-      resize: vertical;
-      min-height: 90px;
+    button{
+      border:none;
+      border-radius:12px;
+      padding:12px 16px;
+      font-weight:700;
+      cursor:pointer;
+      background:var(--accent);
+      color:#fff;
     }
 
-    .section-title {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 12px;
-      flex-wrap: wrap;
+    button.secondary{
+      background:#ece8de;
+      color:var(--text);
     }
 
-    .btn {
-      border: none;
-      border-radius: 10px;
-      padding: 10px 14px;
-      cursor: pointer;
-      font-weight: 700;
-      font-size: 14px;
+    button.ghost{
+      background:#f5f1e7;
+      color:var(--text);
     }
 
-    .btn-primary {
-      background: #111827;
-      color: #fff;
+    button.danger{
+      background:#b91c1c;
+      color:#fff;
     }
 
-    .btn-secondary {
-      background: #e5e7eb;
-      color: #111827;
+    button.active-filter{
+      background:var(--accent);
+      color:#fff;
     }
 
-    .btn-danger {
-      background: #dc2626;
-      color: #fff;
+    .view{ display:none; }
+    .view.active{ display:block; }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      gap:14px;
+      margin-bottom:18px;
     }
 
-    .btn-success {
-      background: #059669;
-      color: #fff;
+    .mapping-top-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+      gap:14px;
+      margin-bottom:18px;
     }
 
-    .btn-warning {
-      background: #d97706;
-      color: #fff;
+    .card,.objective-card,.day-card,.history-card,.surah-card,.verse-panel{
+      padding:16px;
     }
 
-    .btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
+    .stat-label{
+      font-size:14px;
+      color:var(--muted);
+      margin-bottom:8px;
     }
 
-    .item-box {
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 12px;
-      background: #fafafa;
+    .stat-value{
+      font-size:30px;
+      font-weight:700;
+      color:var(--accent);
     }
 
-    .item-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-      gap: 10px;
-      flex-wrap: wrap;
+    .progress{
+      width:100%;
+      height:12px;
+      background:#ece7dc;
+      border-radius:999px;
+      overflow:hidden;
+      margin-top:10px;
     }
 
-    .badge {
-      display: inline-block;
-      font-size: 12px;
-      font-weight: 700;
-      background: #eef2ff;
-      color: #3730a3;
-      padding: 6px 10px;
-      border-radius: 999px;
+    .progress > div{
+      height:100%;
+      width:0%;
+      background:linear-gradient(90deg,var(--accent),var(--accent2));
+      transition:width .25s ease;
     }
 
-    .history-list {
-      display: grid;
-      gap: 16px;
+    .section-title{
+      margin:0 0 14px;
+      color:var(--gold);
+      font-size:22px;
     }
 
-    .week-card {
-      border: 1px solid #e5e7eb;
-      border-radius: 14px;
-      padding: 16px;
-      background: #ffffff;
+    .week-badge{
+      display:inline-block;
+      background:#e8f3ef;
+      color:var(--accent);
+      padding:6px 12px;
+      border-radius:999px;
+      font-weight:700;
+      font-size:13px;
     }
 
-    .week-meta {
-      font-size: 13px;
-      color: #6b7280;
-      margin-bottom: 10px;
+    .objective-head,.day-top,.history-top,.surah-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
     }
 
-    .week-block {
-      margin-top: 12px;
-      padding: 12px;
-      border-radius: 10px;
-      background: #f9fafb;
-      border: 1px solid #f0f0f0;
+    .objective-head h3,.day-top h3,.history-top h3,.surah-top h3{
+      margin:0;
+      color:var(--accent);
     }
 
-    .entry-line {
-      font-size: 14px;
-      padding: 6px 0;
-      border-bottom: 1px dashed #e5e7eb;
+    .subtle{
+      color:var(--muted);
+      font-size:14px;
     }
 
-    .entry-line:last-child {
-      border-bottom: none;
+    .row{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+      gap:10px;
+      margin-bottom:10px;
     }
 
-    .top-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
+    label{
+      display:block;
+      font-weight:700;
+      font-size:14px;
+      margin-bottom:6px;
     }
 
-    .empty {
-      text-align: center;
-      color: #6b7280;
-      padding: 18px;
-      border: 1px dashed #cbd5e1;
-      border-radius: 12px;
-      background: #f8fafc;
+    select,input[type="number"],input[type="text"],input[type="date"],textarea{
+      width:100%;
+      border:1px solid #d1d5db;
+      border-radius:10px;
+      padding:10px 12px;
+      font:inherit;
+      background:#fff;
     }
 
-    .note {
-      font-size: 13px;
-      color: #6b7280;
-      margin-top: 8px;
+    textarea{
+      min-height:80px;
+      resize:vertical;
     }
 
-    .separator {
-      height: 1px;
-      background: #e5e7eb;
-      margin: 18px 0;
+    .mode-switch button.inactive{
+      background:#ece8de;
+      color:var(--text);
     }
 
-    .readonly-box {
-      border: 1px solid #f3e8ff;
-      background: #fcfaff;
+    .part-card,.moment{
+      background:var(--soft);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px;
+      margin-bottom:10px;
     }
 
-    .readonly-label {
-      font-size: 12px;
-      font-weight: 700;
-      color: #7c3aed;
-      margin-bottom: 8px;
+    .part-card h4,.moment h4{
+      margin:0 0 10px;
+      color:var(--gold);
+      font-size:15px;
     }
 
-    @media (max-width: 768px) {
-      .container { padding: 16px; }
+    .summary-box{
+      background:#f8faf8;
+      border:1px dashed #cfd8d3;
+      border-radius:14px;
+      padding:12px;
+      margin-top:8px;
+      font-size:14px;
+    }
+
+    .days{
+      display:grid;
+      gap:14px;
+    }
+
+    .moments{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:12px;
+      margin-top:12px;
+    }
+
+    .task{
+      border-top:1px solid #e8e2d8;
+      padding-top:10px;
+      margin-top:10px;
+    }
+
+    .task:first-child{
+      border-top:none;
+      padding-top:0;
+      margin-top:0;
+    }
+
+    .task label{
+      display:flex;
+      gap:8px;
+      align-items:flex-start;
+      margin-bottom:8px;
+    }
+
+    .empty{
+      background:var(--card);
+      border:1px dashed var(--line);
+      border-radius:18px;
+      padding:20px;
+      text-align:center;
+      color:var(--muted);
+    }
+
+    .toast{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      top:16px;
+      z-index:9999;
+      padding:14px 18px;
+      font-weight:700;
+      display:none;
+    }
+
+    .toast.show{
+      display:block;
+      animation:toastPop .5s ease;
+    }
+
+    @keyframes toastPop{
+      0%{transform:translateX(-50%) translateY(-10px);opacity:0}
+      100%{transform:translateX(-50%) translateY(0);opacity:1}
+    }
+
+    #confetti-layer{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      overflow:hidden;
+      z-index:9998;
+    }
+
+    .confetti{
+      position:absolute;
+      width:10px;
+      height:14px;
+      opacity:.95;
+      animation:fall linear forwards;
+      border-radius:2px;
+    }
+
+    @keyframes fall{
+      0%{transform:translateY(-20px) rotate(0deg);opacity:1}
+      100%{transform:translateY(110vh) rotate(720deg);opacity:0}
+    }
+
+    .week-burst, .surah-burst{
+      position:fixed;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%) scale(.7);
+      background:#fff;
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+      border-radius:22px;
+      padding:22px 26px;
+      font-weight:700;
+      z-index:10000;
+      display:none;
+      text-align:center;
+    }
+
+    .week-burst.show, .surah-burst.show{
+      display:block;
+      animation:burst .9s ease;
+    }
+
+    @keyframes burst{
+      0%{transform:translate(-50%,-50%) scale(.5);opacity:0}
+      55%{transform:translate(-50%,-50%) scale(1.08);opacity:1}
+      100%{transform:translate(-50%,-50%) scale(1);opacity:1}
+    }
+
+    .surah-layout{
+      display:grid;
+      grid-template-columns:1.25fr 1fr;
+      gap:16px;
+    }
+
+    .surah-list{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(185px,1fr));
+      gap:12px;
+    }
+
+    .surah-card{
+      cursor:pointer;
+      transition:.2s ease;
+    }
+
+    .surah-card:hover{
+      transform:translateY(-2px);
+    }
+
+    .surah-card.gray{
+      background:#f3f4f6;
+      border-color:#d1d5db;
+    }
+
+    .surah-card.yellow{
+      background:#fef9c3;
+      border-color:#facc15;
+    }
+
+    .surah-card.green-dark{
+      background:#dcfce7;
+      border-color:#166534;
+    }
+
+    .surah-card.green-light{
+      background:#ecfccb;
+      border-color:#86efac;
+    }
+
+    .surah-card.selected{
+      outline:3px solid rgba(31,111,95,.18);
+    }
+
+    .surah-meta{
+      font-size:13px;
+      color:#374151;
+      margin-top:6px;
+    }
+
+    .surah-status{
+      font-size:12px;
+      font-weight:700;
+      margin-top:8px;
+    }
+
+    .verse-panel{
+      min-height:300px;
+      position:sticky;
+      top:16px;
+    }
+
+    .verse-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(52px,1fr));
+      gap:8px;
+      margin-top:14px;
+    }
+
+    .verse-btn{
+      border:none;
+      border-radius:10px;
+      padding:10px 6px;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .verse-btn.gray{
+      background:#e5e7eb;
+      color:#374151;
+    }
+
+    .verse-btn.green-dark{
+      background:#166534;
+      color:#fff;
+    }
+
+    .verse-btn.green-light{
+      background:#bbf7d0;
+      color:#14532d;
+    }
+
+    .legend{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+
+    .legend span{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-size:13px;
+      color:#374151;
+    }
+
+    .dot{
+      width:14px;
+      height:14px;
+      border-radius:50%;
+      display:inline-block;
+    }
+
+    .dot.gray{background:#d1d5db}
+    .dot.yellow{background:#facc15}
+    .dot.green-dark{background:#166534}
+    .dot.green-light{background:#bbf7d0}
+
+    .mini-list{
+      margin:0;
+      padding-left:18px;
+      color:#374151;
+    }
+
+    .mini-list li{
+      margin-bottom:6px;
+    }
+
+    @media (max-width:980px){
+      .surah-layout{
+        grid-template-columns:1fr;
+      }
+      .verse-panel{
+        position:static;
+      }
+    }
+
+    @media (max-width:700px){
+      .stat-value{font-size:26px}
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="card">
-      <h1>Création de semaine - Suivi Qur'an</h1>
-      <p class="note">
-        LF fonctionne comme les autres catégories. DA et Consolidation peuvent maintenant être générés automatiquement à partir de A1+A2 et A3+A4.
-      </p>
-    </div>
+<div id="confetti-layer"></div>
+<div id="toast" class="toast"></div>
+<div id="weekBurst" class="week-burst">Semaine complétée !<br>بارك الله فيك</div>
+<div id="surahBurst" class="surah-burst">Sourate validée !<br>ما شاء الله</div>
 
-    <div class="card">
-      <div class="grid grid-2">
-        <div>
-          <label for="weekTitle">Nom / titre de la semaine</label>
-          <input type="text" id="weekTitle" placeholder="Exemple : Semaine 12 - Révision Juz 2" />
-        </div>
-        <div>
-          <label for="weekProfessorNote">Remarque générale / professeur</label>
-          <input type="text" id="weekProfessorNote" placeholder="Exemple : Accent sur la fluidité" />
-        </div>
-      </div>
-
-      <div class="separator"></div>
-
-      <div class="section-title">
-        <h2>Apprentissage (A1 à A4)</h2>
-        <button class="btn btn-secondary" onclick="ensureFourAEntries()">Réinitialiser A1 à A4</button>
-      </div>
-      <div id="A-list"></div>
-      <p class="note">Cette partie est fixée sur 4 blocs : A1, A2, A3 et A4.</p>
-
-      <div class="separator"></div>
-
-      <div class="section-title">
-        <h2>Révision nouvelle (RN)</h2>
-        <button class="btn btn-secondary" onclick="addEntry('RN')">+ Ajouter une sélection</button>
-      </div>
-      <div id="RN-list"></div>
-
-      <div class="separator"></div>
-
-      <div class="section-title">
-        <h2>Révision ancienne (RA)</h2>
-        <button class="btn btn-secondary" onclick="addEntry('RA')">+ Ajouter une sélection</button>
-      </div>
-      <div id="RA-list"></div>
-
-      <div class="separator"></div>
-
-      <div class="section-title">
-        <h2>Lecture fluide (LF)</h2>
-        <button class="btn btn-secondary" onclick="addEntry('LF')">+ Ajouter une sélection</button>
-      </div>
-      <div id="LF-list"></div>
-
-      <div class="separator"></div>
-
-      <div class="section-title">
-        <h2>Découverte / DA</h2>
-        <div class="top-actions">
-          <button class="btn btn-warning" onclick="generateDAFromA()">Calquer DA sur A</button>
-          <button class="btn btn-secondary" onclick="resetDerivedSection('DA')">Vider DA</button>
-        </div>
-      </div>
-      <div id="DA-list"></div>
-      <p class="note">
-        DA1 = A1 + A2 | DA2 = A3 + A4
-      </p>
-
-      <div class="separator"></div>
-
-      <div class="section-title">
-        <h2>Consolidation (C)</h2>
-        <div class="top-actions">
-          <button class="btn btn-warning" onclick="generateCFromA()">Calquer Consolidation sur A</button>
-          <button class="btn btn-secondary" onclick="resetDerivedSection('C')">Vider Consolidation</button>
-        </div>
-      </div>
-      <div id="C-list"></div>
-      <p class="note">
-        C1 = A1 + A2 | C2 = A3 + A4
-      </p>
-
-      <div class="separator"></div>
-
-      <div class="top-actions">
-        <button class="btn btn-success" id="validateWeekBtn" onclick="saveWeek()">
-          Valider la création de la semaine
-        </button>
-        <button class="btn btn-secondary" onclick="resetForm()">
-          Annuler / Réinitialiser la saisie
-        </button>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="section-title">
-        <h2>Semaines historiques</h2>
-        <button class="btn btn-danger" onclick="deleteAllWeeks()">Supprimer les semaines historiques</button>
-      </div>
-      <div id="historyContainer" class="history-list"></div>
+<div class="app">
+  <div class="topbar">
+    <h1>Suivi du Qur’an</h1>
+    <p>Tableau de bord, objectifs, semaine en cours, historique et cartographie du Qur’an.</p>
+    <div class="menu">
+      <button onclick="showView('dashboard')">Tableau de bord</button>
+      <button onclick="showView('objectives')">Objectifs</button>
+      <button onclick="showView('week')">Semaine en cours</button>
+      <button onclick="showView('mapping')">Cartographie du Qur’an</button>
+      <button onclick="showView('history')">Historique</button>
+      <button class="secondary" onclick="createNewWeek()">Nouvelle semaine</button>
     </div>
   </div>
 
-  <script>
-    const STORAGE_KEY = "quran_weeks_history_v3";
-    let entryCounter = 0;
+  <section id="dashboard" class="view active">
+    <div class="grid">
+      <div class="card">
+        <div class="stat-label">Progression globale du Qur’an</div>
+        <div class="stat-value" id="globalPercent">0%</div>
+        <div class="progress"><div id="globalPercentBar"></div></div>
+        <div class="subtle" style="margin-top:8px;" id="globalVersesText">0 / 6236 versets</div>
+      </div>
 
-    const surahs = [
-      { number: 1, name: "Al-Fatiha", verses: 7 },
-      { number: 2, name: "Al-Baqara", verses: 286 },
-      { number: 3, name: "Ali 'Imran", verses: 200 },
-      { number: 4, name: "An-Nisa", verses: 176 },
-      { number: 5, name: "Al-Ma'ida", verses: 120 },
-      { number: 6, name: "Al-An'am", verses: 165 },
-      { number: 7, name: "Al-A'raf", verses: 206 },
-      { number: 8, name: "Al-Anfal", verses: 75 },
-      { number: 9, name: "At-Tawba", verses: 129 },
-      { number: 10, name: "Yunus", verses: 109 },
-      { number: 11, name: "Hud", verses: 123 },
-      { number: 12, name: "Yusuf", verses: 111 },
-      { number: 13, name: "Ar-Ra'd", verses: 43 },
-      { number: 14, name: "Ibrahim", verses: 52 },
-      { number: 15, name: "Al-Hijr", verses: 99 },
-      { number: 16, name: "An-Nahl", verses: 128 },
-      { number: 17, name: "Al-Isra", verses: 111 },
-      { number: 18, name: "Al-Kahf", verses: 110 },
-      { number: 19, name: "Maryam", verses: 98 },
-      { number: 20, name: "Ta-Ha", verses: 135 },
-      { number: 21, name: "Al-Anbiya", verses: 112 },
-      { number: 22, name: "Al-Hajj", verses: 78 },
-      { number: 23, name: "Al-Mu'minun", verses: 118 },
-      { number: 24, name: "An-Nur", verses: 64 },
-      { number: 25, name: "Al-Furqan", verses: 77 },
-      { number: 26, name: "Ash-Shu'ara", verses: 227 },
-      { number: 27, name: "An-Naml", verses: 93 },
-      { number: 28, name: "Al-Qasas", verses: 88 },
-      { number: 29, name: "Al-'Ankabut", verses: 69 },
-      { number: 30, name: "Ar-Rum", verses: 60 },
-      { number: 31, name: "Luqman", verses: 34 },
-      { number: 32, name: "As-Sajda", verses: 30 },
-      { number: 33, name: "Al-Ahzab", verses: 73 },
-      { number: 34, name: "Saba", verses: 54 },
-      { number: 35, name: "Fatir", verses: 45 },
-      { number: 36, name: "Ya-Sin", verses: 83 },
-      { number: 37, name: "As-Saffat", verses: 182 },
-      { number: 38, name: "Sad", verses: 88 },
-      { number: 39, name: "Az-Zumar", verses: 75 },
-      { number: 40, name: "Ghafir", verses: 85 },
-      { number: 41, name: "Fussilat", verses: 54 },
-      { number: 42, name: "Ash-Shura", verses: 53 },
-      { number: 43, name: "Az-Zukhruf", verses: 89 },
-      { number: 44, name: "Ad-Dukhan", verses: 59 },
-      { number: 45, name: "Al-Jathiya", verses: 37 },
-      { number: 46, name: "Al-Ahqaf", verses: 35 },
-      { number: 47, name: "Muhammad", verses: 38 },
-      { number: 48, name: "Al-Fath", verses: 29 },
-      { number: 49, name: "Al-Hujurat", verses: 18 },
-      { number: 50, name: "Qaf", verses: 45 },
-      { number: 51, name: "Adh-Dhariyat", verses: 60 },
-      { number: 52, name: "At-Tur", verses: 49 },
-      { number: 53, name: "An-Najm", verses: 62 },
-      { number: 54, name: "Al-Qamar", verses: 55 },
-      { number: 55, name: "Ar-Rahman", verses: 78 },
-      { number: 56, name: "Al-Waqi'a", verses: 96 },
-      { number: 57, name: "Al-Hadid", verses: 29 },
-      { number: 58, name: "Al-Mujadila", verses: 22 },
-      { number: 59, name: "Al-Hashr", verses: 24 },
-      { number: 60, name: "Al-Mumtahana", verses: 13 },
-      { number: 61, name: "As-Saff", verses: 14 },
-      { number: 62, name: "Al-Jumu'a", verses: 11 },
-      { number: 63, name: "Al-Munafiqun", verses: 11 },
-      { number: 64, name: "At-Taghabun", verses: 18 },
-      { number: 65, name: "At-Talaq", verses: 12 },
-      { number: 66, name: "At-Tahrim", verses: 12 },
-      { number: 67, name: "Al-Mulk", verses: 30 },
-      { number: 68, name: "Al-Qalam", verses: 52 },
-      { number: 69, name: "Al-Haqqa", verses: 52 },
-      { number: 70, name: "Al-Ma'arij", verses: 44 },
-      { number: 71, name: "Nuh", verses: 28 },
-      { number: 72, name: "Al-Jinn", verses: 28 },
-      { number: 73, name: "Al-Muzzammil", verses: 20 },
-      { number: 74, name: "Al-Muddaththir", verses: 56 },
-      { number: 75, name: "Al-Qiyama", verses: 40 },
-      { number: 76, name: "Al-Insan", verses: 31 },
-      { number: 77, name: "Al-Mursalat", verses: 50 },
-      { number: 78, name: "An-Naba", verses: 40 },
-      { number: 79, name: "An-Nazi'at", verses: 46 },
-      { number: 80, name: "'Abasa", verses: 42 },
-      { number: 81, name: "At-Takwir", verses: 29 },
-      { number: 82, name: "Al-Infitar", verses: 19 },
-      { number: 83, name: "Al-Mutaffifin", verses: 36 },
-      { number: 84, name: "Al-Inshiqaq", verses: 25 },
-      { number: 85, name: "Al-Buruj", verses: 22 },
-      { number: 86, name: "At-Tariq", verses: 17 },
-      { number: 87, name: "Al-A'la", verses: 19 },
-      { number: 88, name: "Al-Ghashiya", verses: 26 },
-      { number: 89, name: "Al-Fajr", verses: 30 },
-      { number: 90, name: "Al-Balad", verses: 20 },
-      { number: 91, name: "Ash-Shams", verses: 15 },
-      { number: 92, name: "Al-Layl", verses: 21 },
-      { number: 93, name: "Ad-Duha", verses: 11 },
-      { number: 94, name: "Ash-Sharh", verses: 8 },
-      { number: 95, name: "At-Tin", verses: 8 },
-      { number: 96, name: "Al-'Alaq", verses: 19 },
-      { number: 97, name: "Al-Qadr", verses: 5 },
-      { number: 98, name: "Al-Bayyina", verses: 8 },
-      { number: 99, name: "Az-Zalzala", verses: 8 },
-      { number: 100, name: "Al-'Adiyat", verses: 11 },
-      { number: 101, name: "Al-Qari'a", verses: 11 },
-      { number: 102, name: "At-Takathur", verses: 8 },
-      { number: 103, name: "Al-'Asr", verses: 3 },
-      { number: 104, name: "Al-Humaza", verses: 9 },
-      { number: 105, name: "Al-Fil", verses: 5 },
-      { number: 106, name: "Quraysh", verses: 4 },
-      { number: 107, name: "Al-Ma'un", verses: 7 },
-      { number: 108, name: "Al-Kawthar", verses: 3 },
-      { number: 109, name: "Al-Kafirun", verses: 6 },
-      { number: 110, name: "An-Nasr", verses: 3 },
-      { number: 111, name: "Al-Masad", verses: 5 },
-      { number: 112, name: "Al-Ikhlas", verses: 4 },
-      { number: 113, name: "Al-Falaq", verses: 5 },
-      { number: 114, name: "An-Nas", verses: 6 }
-    ];
+      <div class="card">
+        <div class="stat-label">Semaines complétées</div>
+        <div class="stat-value" id="completedWeeks">0</div>
+      </div>
 
-    function createSurahOptions(selected = 1) {
-      return surahs.map(s => `
-        <option value="${s.number}" ${s.number === Number(selected) ? "selected" : ""}>
-          ${s.number}. ${s.name}
-        </option>
-      `).join("");
+      <div class="card">
+        <div class="stat-label">Avancée de la semaine en cours</div>
+        <div class="stat-value" id="weekPercentBig">0%</div>
+        <div class="progress"><div id="weekPercentBarBig"></div></div>
+      </div>
+
+      <div class="card">
+        <div class="stat-label">Sourates complètes</div>
+        <div class="stat-value" id="completeSurahsCount">0</div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2 style="margin-top:0;">Accès rapide</h2>
+        <div class="footer-actions">
+          <button onclick="showView('week')">Aller à la semaine en cours</button>
+          <button onclick="showView('mapping')">Ouvrir la cartographie</button>
+          <button class="secondary" onclick="showView('history')">Voir l’historique</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 style="margin-top:0;">Semaine active</h2>
+        <div class="subtle" id="dashboardCurrentWeekLabel">Aucune semaine</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="objectives" class="view">
+    <div class="objective-head">
+      <div>
+        <h2 class="section-title" style="margin-bottom:6px;">Objectifs de la semaine</h2>
+        <div class="subtle" id="currentWeekLabelObjectives">Aucune semaine</div>
+      </div>
+      <span class="week-badge" id="currentWeekBadgeObjectives">0%</span>
+    </div>
+    <div id="objectivesContent"></div>
+  </section>
+
+  <section id="week" class="view">
+    <div class="objective-head">
+      <div>
+        <h2 class="section-title" style="margin-bottom:6px;">Semaine en cours</h2>
+        <div class="subtle" id="currentWeekLabelWeek">Aucune semaine</div>
+      </div>
+      <span class="week-badge" id="currentWeekBadgeWeek">0%</span>
+    </div>
+    <div id="weekContent"></div>
+  </section>
+
+  <section id="mapping" class="view">
+    <div class="objective-head">
+      <div>
+        <h2 class="section-title" style="margin-bottom:6px;">Cartographie du Qur’an</h2>
+        <div class="subtle">Gris = non appris · Jaune = entamé · Vert foncé = validé récemment · Vert pâle = à réviser (RA)</div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <span><i class="dot gray"></i> Non appris</span>
+      <span><i class="dot yellow"></i> Entamé</span>
+      <span><i class="dot green-dark"></i> Validé récemment</span>
+      <span><i class="dot green-light"></i> À réviser (RA)</span>
+    </div>
+
+    <div class="mapping-top-grid" style="margin-top:14px;">
+      <div class="card">
+        <div class="stat-label">Sourates à réviser (RA)</div>
+        <div class="stat-value" id="raSurahCount">0</div>
+        <div class="subtle" style="margin-top:8px;">Sourates validées depuis plus de 4 semaines</div>
+      </div>
+
+      <div class="card">
+        <div class="stat-label">Sourates entamées</div>
+        <div class="stat-value" id="startedSurahCount">0</div>
+        <div class="subtle" style="margin-top:8px;">Sourates commencées mais non terminées</div>
+      </div>
+
+      <div class="card">
+        <div class="stat-label">Prochaine sourate à finir</div>
+        <div id="nextSurahToFinish" class="subtle">Aucune sourate entamée</div>
+      </div>
+
+      <div class="card">
+        <div class="stat-label">Priorités RA</div>
+        <ul id="raPriorityList" class="mini-list"></ul>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px;">
+      <div class="stat-label">Filtres</div>
+      <div class="filter-row">
+        <button id="filter-all" class="active-filter" onclick="setMappingFilter('all')">Toutes</button>
+        <button id="filter-gray" class="ghost" onclick="setMappingFilter('gray')">Non apprises</button>
+        <button id="filter-yellow" class="ghost" onclick="setMappingFilter('yellow')">Entamées</button>
+        <button id="filter-green-dark" class="ghost" onclick="setMappingFilter('green-dark')">Validées récentes</button>
+        <button id="filter-green-light" class="ghost" onclick="setMappingFilter('green-light')">À réviser (RA)</button>
+      </div>
+    </div>
+
+    <div class="surah-layout">
+      <div>
+        <div id="surahList" class="surah-list"></div>
+      </div>
+      <div>
+        <div id="versePanel" class="verse-panel">
+          <div class="empty">Clique sur une sourate pour voir les versets validés.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="history" class="view">
+    <div class="objective-head">
+      <h2 class="section-title" style="margin-bottom:0;">Historique</h2>
+      <button class="danger" onclick="deleteAllWeeks()">Supprimer toutes les semaines historiques</button>
+    </div>
+    <div id="historyContent"></div>
+  </section>
+</div>
+
+<script>
+const SURAHS = [
+  {n:1,name:"Al-Fatiha",v:7},{n:2,name:"Al-Baqara",v:286},{n:3,name:"Ali 'Imran",v:200},
+  {n:4,name:"An-Nisa",v:176},{n:5,name:"Al-Ma'idah",v:120},{n:6,name:"Al-An'am",v:165},
+  {n:7,name:"Al-A'raf",v:206},{n:8,name:"Al-Anfal",v:75},{n:9,name:"At-Tawbah",v:129},
+  {n:10,name:"Yunus",v:109},{n:11,name:"Hud",v:123},{n:12,name:"Yusuf",v:111},
+  {n:13,name:"Ar-Ra'd",v:43},{n:14,name:"Ibrahim",v:52},{n:15,name:"Al-Hijr",v:99},
+  {n:16,name:"An-Nahl",v:128},{n:17,name:"Al-Isra",v:111},{n:18,name:"Al-Kahf",v:110},
+  {n:19,name:"Maryam",v:98},{n:20,name:"Ta-Ha",v:135},{n:21,name:"Al-Anbiya",v:112},
+  {n:22,name:"Al-Hajj",v:78},{n:23,name:"Al-Mu'minun",v:118},{n:24,name:"An-Nur",v:64},
+  {n:25,name:"Al-Furqan",v:77},{n:26,name:"Ash-Shu'ara",v:227},{n:27,name:"An-Naml",v:93},
+  {n:28,name:"Al-Qasas",v:88},{n:29,name:"Al-'Ankabut",v:69},{n:30,name:"Ar-Rum",v:60},
+  {n:31,name:"Luqman",v:34},{n:32,name:"As-Sajdah",v:30},{n:33,name:"Al-Ahzab",v:73},
+  {n:34,name:"Saba",v:54},{n:35,name:"Fatir",v:45},{n:36,name:"Ya-Sin",v:83},
+  {n:37,name:"As-Saffat",v:182},{n:38,name:"Sad",v:88},{n:39,name:"Az-Zumar",v:75},
+  {n:40,name:"Ghafir",v:85},{n:41,name:"Fussilat",v:54},{n:42,name:"Ash-Shura",v:53},
+  {n:43,name:"Az-Zukhruf",v:89},{n:44,name:"Ad-Dukhan",v:59},{n:45,name:"Al-Jathiyah",v:37},
+  {n:46,name:"Al-Ahqaf",v:35},{n:47,name:"Muhammad",v:38},{n:48,name:"Al-Fath",v:29},
+  {n:49,name:"Al-Hujurat",v:18},{n:50,name:"Qaf",v:45},{n:51,name:"Adh-Dhariyat",v:60},
+  {n:52,name:"At-Tur",v:49},{n:53,name:"An-Najm",v:62},{n:54,name:"Al-Qamar",v:55},
+  {n:55,name:"Ar-Rahman",v:78},{n:56,name:"Al-Waqi'ah",v:96},{n:57,name:"Al-Hadid",v:29},
+  {n:58,name:"Al-Mujadilah",v:22},{n:59,name:"Al-Hashr",v:24},{n:60,name:"Al-Mumtahanah",v:13},
+  {n:61,name:"As-Saff",v:14},{n:62,name:"Al-Jumu'ah",v:11},{n:63,name:"Al-Munafiqun",v:11},
+  {n:64,name:"At-Taghabun",v:18},{n:65,name:"At-Talaq",v:12},{n:66,name:"At-Tahrim",v:12},
+  {n:67,name:"Al-Mulk",v:30},{n:68,name:"Al-Qalam",v:52},{n:69,name:"Al-Haqqah",v:52},
+  {n:70,name:"Al-Ma'arij",v:44},{n:71,name:"Nuh",v:28},{n:72,name:"Al-Jinn",v:28},
+  {n:73,name:"Al-Muzzammil",v:20},{n:74,name:"Al-Muddaththir",v:56},{n:75,name:"Al-Qiyamah",v:40},
+  {n:76,name:"Al-Insan",v:31},{n:77,name:"Al-Mursalat",v:50},{n:78,name:"An-Naba",v:40},
+  {n:79,name:"An-Nazi'at",v:46},{n:80,name:"'Abasa",v:42},{n:81,name:"At-Takwir",v:29},
+  {n:82,name:"Al-Infitar",v:19},{n:83,name:"Al-Mutaffifin",v:36},{n:84,name:"Al-Inshiqaq",v:25},
+  {n:85,name:"Al-Buruj",v:22},{n:86,name:"At-Tariq",v:17},{n:87,name:"Al-A'la",v:19},
+  {n:88,name:"Al-Ghashiyah",v:26},{n:89,name:"Al-Fajr",v:30},{n:90,name:"Al-Balad",v:20},
+  {n:91,name:"Ash-Shams",v:15},{n:92,name:"Al-Layl",v:21},{n:93,name:"Ad-Duha",v:11},
+  {n:94,name:"Ash-Sharh",v:8},{n:95,name:"At-Tin",v:8},{n:96,name:"Al-'Alaq",v:19},
+  {n:97,name:"Al-Qadr",v:5},{n:98,name:"Al-Bayyinah",v:8},{n:99,name:"Az-Zalzalah",v:8},
+  {n:100,name:"Al-'Adiyat",v:11},{n:101,name:"Al-Qari'ah",v:11},{n:102,name:"At-Takathur",v:8},
+  {n:103,name:"Al-'Asr",v:3},{n:104,name:"Al-Humazah",v:9},{n:105,name:"Al-Fil",v:5},
+  {n:106,name:"Quraysh",v:4},{n:107,name:"Al-Ma'un",v:7},{n:108,name:"Al-Kawthar",v:3},
+  {n:109,name:"Al-Kafirun",v:6},{n:110,name:"An-Nasr",v:3},{n:111,name:"Al-Masad",v:5},
+  {n:112,name:"Al-Ikhlas",v:4},{n:113,name:"Al-Falaq",v:5},{n:114,name:"An-Nas",v:6}
+];
+
+const TOTAL_VERSES = 6236;
+const STORAGE_KEY = "quran_tracker_v9";
+const FOUR_WEEKS_MS = 28 * 24 * 60 * 60 * 1000;
+
+const OBJECTIVE_CONFIG = {
+  L:{parts:7,title:"Lecture"},
+  A:{parts:4,title:"Apprentissage"},
+  RN:{parts:1,title:"Révision nouvelle"},
+  RA:{parts:4,title:"Révision ancienne"},
+  C:{parts:2,title:"Consolidation"},
+  DA:{parts:2,title:"Découverte approfondie"}
+};
+
+const scheduleTemplate = [
+  {day:"Lundi", moments:[
+    {name:"Matin", items:[{type:"part", key:"DA", index:0}]},
+    {name:"Midi", items:[{type:"part", key:"C", index:0},{type:"part", key:"RN", index:0},{type:"part", key:"RA", index:0}]},
+    {name:"Soir", items:[{type:"part", key:"L", index:0},{type:"lf"},{type:"part", key:"DA", index:1}]}
+  ]},
+  {day:"Mardi", moments:[
+    {name:"Matin", items:[{type:"part", key:"A", index:0}]},
+    {name:"Midi", items:[{type:"part", key:"RN", index:0},{type:"part", key:"RA", index:0}]},
+    {name:"Maghreb", items:[{type:"part", key:"L", index:1}]},
+    {name:"Soir", items:[{type:"part", key:"A", index:0},{type:"lf"}]}
+  ]},
+  {day:"Mercredi", moments:[
+    {name:"Matin", items:[{type:"part", key:"A", index:1}]},
+    {name:"Midi", items:[{type:"part", key:"RN", index:0},{type:"part", key:"RA", index:1}]},
+    {name:"Maghreb", items:[{type:"part", key:"L", index:2}]},
+    {name:"Soir", items:[{type:"part", key:"A", index:1},{type:"lf"}]}
+  ]},
+  {day:"Jeudi", moments:[
+    {name:"Matin", items:[{type:"part", key:"DA", index:0},{type:"part", key:"DA", index:1}]},
+    {name:"Midi", items:[{type:"part", key:"C", index:0},{type:"part", key:"C", index:1}]},
+    {name:"Maghreb", items:[{type:"part", key:"L", index:3}]},
+    {name:"Soir", items:[{type:"part", key:"C", index:0},{type:"part", key:"C", index:1},{type:"part", key:"DA", index:0},{type:"part", key:"DA", index:1},{type:"lf"}]}
+  ]},
+  {day:"Vendredi", moments:[
+    {name:"Matin", items:[{type:"part", key:"A", index:2}]},
+    {name:"Midi", items:[{type:"part", key:"RN", index:0},{type:"part", key:"RA", index:2}]},
+    {name:"Maghreb", items:[{type:"part", key:"L", index:4}]},
+    {name:"Soir", items:[{type:"part", key:"A", index:2},{type:"lf"}]}
+  ]},
+  {day:"Samedi", moments:[
+    {name:"Matin", items:[{type:"part", key:"A", index:3}]},
+    {name:"Midi", items:[{type:"part", key:"RN", index:0},{type:"part", key:"RA", index:3}]},
+    {name:"Maghreb", items:[{type:"part", key:"L", index:5}]},
+    {name:"Soir", items:[{type:"part", key:"A", index:3},{type:"lf"}]}
+  ]},
+  {day:"Dimanche", moments:[
+    {name:"Matin", items:[{type:"part", key:"C", index:0},{type:"part", key:"C", index:1}]},
+    {name:"Midi", items:[{type:"part", key:"RA", index:0},{type:"part", key:"RA", index:1},{type:"part", key:"RA", index:2},{type:"part", key:"RA", index:3}]},
+    {name:"Maghreb", items:[{type:"part", key:"L", index:6}]},
+    {name:"Soir", items:[{type:"part", key:"C", index:0},{type:"part", key:"C", index:1},{type:"lf"}]}
+  ]}
+];
+
+function makeDefaultObjective(key){
+  const count = OBJECTIVE_CONFIG[key].parts;
+  return {
+    key,
+    mode:"auto",
+    range:{startSurah:1,startAyah:1,endSurah:1,endAyah:1},
+    parts:Array.from({length:count},()=>({startSurah:1,startAyah:1,endSurah:1,endAyah:1}))
+  };
+}
+
+function makeDefaultLF(){
+  return {
+    startSurah:1,
+    startAyah:1,
+    endSurah:1,
+    endAyah:1
+  };
+}
+
+function weekTitleFromDate(dateStr){
+  if(!dateStr) return "Semaine sans date";
+  const d = new Date(dateStr + "T00:00:00");
+  return `Semaine du ${d.toLocaleDateString("fr-FR")}`;
+}
+
+function createVerseProgress(){
+  const progress = {};
+  SURAHS.forEach(s => {
+    progress[s.n] = {
+      validated: [],
+      validatedAt: {},
+      professorValidatedDate: ""
+    };
+  });
+  return progress;
+}
+
+function normalizeWeek(week){
+  if(!week.objectives) week.objectives = {};
+  Object.keys(OBJECTIVE_CONFIG).forEach(k=>{
+    if(!week.objectives[k]) week.objectives[k] = makeDefaultObjective(k);
+
+    const targetParts = OBJECTIVE_CONFIG[k].parts;
+    if(!Array.isArray(week.objectives[k].parts)) {
+      week.objectives[k].parts = makeDefaultObjective(k).parts;
     }
 
-    function createVerseOptions(maxVerses, selected = 1) {
-      let html = "";
-      for (let i = 1; i <= maxVerses; i++) {
-        html += `<option value="${i}" ${i === Number(selected) ? "selected" : ""}>${i}</option>`;
+    if(week.objectives[k].parts.length !== targetParts){
+      const oldParts = week.objectives[k].parts || [];
+      const normalized = [];
+      for(let i=0;i<targetParts;i++){
+        normalized.push(oldParts[i] || {startSurah:1,startAyah:1,endSurah:1,endAyah:1});
       }
-      return html;
+      week.objectives[k].parts = normalized;
     }
 
-    function getSurahByNumber(number) {
-      return surahs.find(s => s.number === Number(number));
+    if(!week.objectives[k].range){
+      week.objectives[k].range = {startSurah:1,startAyah:1,endSurah:1,endAyah:1};
     }
 
-    function formatSelection(entry) {
-      const noteText = entry.note ? ` | Note : ${entry.note}` : "";
-      return `Sourate ${entry.surahNumber} - ${entry.surahName} | Versets ${entry.verseStart} à ${entry.verseEnd}${noteText}`;
-    }
+    if(!week.objectives[k].mode) week.objectives[k].mode = "auto";
+  });
 
-    function removeEntry(id) {
-      const el = document.getElementById(id);
-      if (el) el.remove();
-      updateValidateButtonState();
-      relabelAEntries();
-    }
+  if(!week.lf) week.lf = makeDefaultLF();
+  if(!week.taskState) week.taskState = {};
+  if(!week.celebrations) week.celebrations = {days:{},week:false};
 
-    function relabelAEntries() {
-      const items = [...document.querySelectorAll("#A-list .item-box")];
-      items.forEach((item, index) => {
-        const badge = item.querySelector(".badge");
-        if (badge) badge.textContent = `A${index + 1}`;
+  return week;
+}
+
+function makeNewWeek(id, startDate){
+  const objectives = {};
+  Object.keys(OBJECTIVE_CONFIG).forEach(k => objectives[k] = makeDefaultObjective(k));
+  return {
+    id,
+    startDate: startDate || new Date().toISOString().slice(0,10),
+    title: weekTitleFromDate(startDate || new Date().toISOString().slice(0,10)),
+    createdAt:new Date().toISOString(),
+    objectives,
+    lf: makeDefaultLF(),
+    taskState:{},
+    celebrations:{days:{},week:false}
+  };
+}
+
+function loadState(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(raw){
+    const parsed = JSON.parse(raw);
+    if(!parsed.verseProgress) parsed.verseProgress = createVerseProgress();
+    if(!parsed.selectedSurah) parsed.selectedSurah = 1;
+    if(!parsed.mappingFilter) parsed.mappingFilter = "all";
+    if(!parsed.pendingWeekDate) parsed.pendingWeekDate = "";
+    parsed.weeks = (parsed.weeks || []).map(normalizeWeek);
+    return parsed;
+  }
+
+  const legacyRaw = localStorage.getItem("quran_tracker_v8");
+  if(legacyRaw){
+    const legacy = JSON.parse(legacyRaw);
+    if(!legacy.verseProgress) legacy.verseProgress = createVerseProgress();
+    if(!legacy.selectedSurah) legacy.selectedSurah = 1;
+    if(!legacy.mappingFilter) legacy.mappingFilter = "all";
+    if(!legacy.pendingWeekDate) legacy.pendingWeekDate = "";
+    legacy.weeks = (legacy.weeks || []).map(normalizeWeek);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(legacy));
+    return legacy;
+  }
+
+  const initial = {
+    currentWeekId:1,
+    selectedSurah:1,
+    mappingFilter:"all",
+    pendingWeekDate:"",
+    weeks:[makeNewWeek(1)],
+    verseProgress:createVerseProgress()
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
+  return initial;
+}
+
+let state = loadState();
+
+function saveState(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  renderAll();
+}
+
+function showView(id){
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  renderAll();
+}
+
+function getWeek(){
+  return state.weeks.find(w=>w.id===state.currentWeekId) || null;
+}
+
+function createNewWeek(){
+  const nextId = state.weeks.length ? Math.max(...state.weeks.map(w=>w.id))+1 : 1;
+  const week = makeNewWeek(nextId);
+  state.weeks.push(week);
+  state.currentWeekId = nextId;
+  state.pendingWeekDate = "";
+  saveState();
+  showView("objectives");
+}
+
+function setPendingWeekDate(value){
+  state.pendingWeekDate = value;
+  saveState();
+}
+
+function cancelPendingWeek(){
+  state.pendingWeekDate = "";
+  saveState();
+  showToast("Création de semaine annulée.");
+}
+
+function createWeekFromDate(){
+  const dateValue = state.pendingWeekDate;
+  if(!dateValue) return;
+
+  const existing = state.weeks.find(w => w.startDate === dateValue);
+  if(existing){
+    state.currentWeekId = existing.id;
+    state.pendingWeekDate = "";
+    saveState();
+    showToast("Cette semaine existe déjà.");
+    showView("week");
+    return;
+  }
+
+  const nextId = state.weeks.length ? Math.max(...state.weeks.map(w=>w.id))+1 : 1;
+  const week = makeNewWeek(nextId, dateValue);
+  state.weeks.push(week);
+  state.currentWeekId = nextId;
+  state.pendingWeekDate = "";
+  saveState();
+  showToast("Nouvelle semaine créée.");
+  showView("objectives");
+}
+
+function deleteWeek(id){
+  const numericId = Number(id);
+  const target = state.weeks.find(w => w.id === numericId);
+  if(!target) return;
+
+  const ok = confirm(`Supprimer ${target.title} ?`);
+  if(!ok) return;
+
+  state.weeks = state.weeks.filter(w => w.id !== numericId);
+
+  if(!state.weeks.length){
+    const fresh = makeNewWeek(1);
+    state.weeks = [fresh];
+    state.currentWeekId = fresh.id;
+  } else if(state.currentWeekId === numericId){
+    state.currentWeekId = state.weeks[0].id;
+  }
+
+  saveState();
+  showToast("Semaine supprimée.");
+}
+
+function deleteAllWeeks(){
+  const ok = confirm("Voulez-vous vraiment supprimer toutes les semaines historiques ?");
+  if(!ok) return;
+
+  const fresh = makeNewWeek(1);
+  state.weeks = [fresh];
+  state.currentWeekId = fresh.id;
+  state.pendingWeekDate = "";
+  saveState();
+  showToast("Historique supprimé.");
+  showView("history");
+}
+
+function selectWeek(id){
+  state.currentWeekId = Number(id);
+  saveState();
+  showView("week");
+}
+
+function surahOptions(selected){
+  return SURAHS.map(s=>`<option value="${s.n}" ${s.n===selected?"selected":""}>${s.n}. ${escapeHtml(s.name)}</option>`).join("");
+}
+
+function ayahOptions(surahNo, selectedAyah){
+  const max = maxAyah(surahNo);
+  let options = "";
+  for(let i = 1; i <= max; i++){
+    options += `<option value="${i}" ${i === Number(selectedAyah) ? "selected" : ""}>${i}</option>`;
+  }
+  return options;
+}
+
+function maxAyah(surahNo){
+  const s = SURAHS.find(x=>x.n===Number(surahNo));
+  return s ? s.v : 1;
+}
+
+function clampAyah(surahNo, ayah){
+  let v = Number(ayah||1);
+  const max = maxAyah(surahNo);
+  if(v < 1) v = 1;
+  if(v > max) v = max;
+  return v;
+}
+
+function cumulativeBeforeSurah(surahNo){
+  let total = 0;
+  for(let i=1;i<surahNo;i++) total += SURAHS[i-1].v;
+  return total;
+}
+
+function refToAbsolute(surah, ayah){
+  return cumulativeBeforeSurah(Number(surah)) + Number(ayah);
+}
+
+function absoluteToRef(abs){
+  let remaining = Number(abs);
+  for(const s of SURAHS){
+    if(remaining <= s.v) return {surah:s.n, ayah:remaining};
+    remaining -= s.v;
+  }
+  return {surah:114, ayah:6};
+}
+
+function isValidRange(r){
+  return refToAbsolute(r.startSurah,r.startAyah) <= refToAbsolute(r.endSurah,r.endAyah);
+}
+
+function rangeCount(r){
+  return refToAbsolute(r.endSurah,r.endAyah) - refToAbsolute(r.startSurah,r.startAyah) + 1;
+}
+
+function formatRange(r){
+  const s1 = SURAHS.find(s=>s.n===Number(r.startSurah));
+  const s2 = SURAHS.find(s=>s.n===Number(r.endSurah));
+  if(!s1 || !s2) return "";
+  return `${s1.name} ${r.startAyah} → ${s2.name} ${r.endAyah}`;
+}
+
+function autoSplitRange(range, partsCount){
+  if(!isValidRange(range)) return [];
+  const startAbs = refToAbsolute(range.startSurah,range.startAyah);
+  const endAbs = refToAbsolute(range.endSurah,range.endAyah);
+  const total = endAbs - startAbs + 1;
+  const base = Math.floor(total / partsCount);
+  const rem = total % partsCount;
+  const result = [];
+  let current = startAbs;
+
+  for(let i=0;i<partsCount;i++){
+    const len = base + (i < rem ? 1 : 0);
+    if(len <= 0){ result.push(null); continue; }
+    const start = absoluteToRef(current);
+    const end = absoluteToRef(current + len - 1);
+    result.push({startSurah:start.surah,startAyah:start.ayah,endSurah:end.surah,endAyah:end.ayah});
+    current += len;
+  }
+  return result;
+}
+
+function objectiveResolvedParts(obj){
+  if(obj.mode === "auto") return autoSplitRange(obj.range, OBJECTIVE_CONFIG[obj.key].parts);
+  return obj.parts;
+}
+
+function updateObjectiveRange(key, field, value){
+  const week = getWeek();
+  if(!week) return;
+  const obj = week.objectives[key];
+  obj.range[field] = Number(value);
+  if(field === "startSurah") obj.range.startAyah = clampAyah(obj.range.startSurah, obj.range.startAyah);
+  if(field === "endSurah") obj.range.endAyah = clampAyah(obj.range.endSurah, obj.range.endAyah);
+  if(field === "startAyah") obj.range.startAyah = clampAyah(obj.range.startSurah, obj.range.startAyah);
+  if(field === "endAyah") obj.range.endAyah = clampAyah(obj.range.endSurah, obj.range.endAyah);
+  saveState();
+}
+
+function updateLF(field, value){
+  const week = getWeek();
+  if(!week) return;
+  week.lf[field] = Number(value);
+  if(field === "startSurah") week.lf.startAyah = clampAyah(week.lf.startSurah, week.lf.startAyah);
+  if(field === "endSurah") week.lf.endAyah = clampAyah(week.lf.endSurah, week.lf.endAyah);
+  if(field === "startAyah") week.lf.startAyah = clampAyah(week.lf.startSurah, week.lf.startAyah);
+  if(field === "endAyah") week.lf.endAyah = clampAyah(week.lf.endSurah, week.lf.endAyah);
+  saveState();
+}
+
+function updateObjectiveMode(key, mode){
+  const week = getWeek();
+  if(!week) return;
+  week.objectives[key].mode = mode;
+  saveState();
+}
+
+function updateManualPart(key, index, field, value){
+  const week = getWeek();
+  if(!week) return;
+  const p = week.objectives[key].parts[index];
+  p[field] = Number(value);
+  if(field === "startSurah") p.startAyah = clampAyah(p.startSurah, p.startAyah);
+  if(field === "endSurah") p.endAyah = clampAyah(p.endSurah, p.endAyah);
+  if(field === "startAyah") p.startAyah = clampAyah(p.startSurah, p.startAyah);
+  if(field === "endAyah") p.endAyah = clampAyah(p.endSurah, p.endAyah);
+  saveState();
+}
+
+function applyAutoToManual(key){
+  const week = getWeek();
+  if(!week) return;
+  const obj = week.objectives[key];
+  const generated = autoSplitRange(obj.range, OBJECTIVE_CONFIG[key].parts);
+  if(generated.length){
+    obj.parts = generated.map(x => x || {startSurah:1,startAyah:1,endSurah:1,endAyah:1});
+    obj.mode = "manual";
+    saveState();
+  }
+}
+
+function mergeRanges(first, second){
+  return {
+    startSurah:first.startSurah,
+    startAyah:first.startAyah,
+    endSurah:second.endSurah,
+    endAyah:second.endAyah
+  };
+}
+
+function syncDerivedObjectiveFromA(targetKey){
+  const week = getWeek();
+  if(!week) return;
+
+  const aParts = objectiveResolvedParts(week.objectives.A);
+  if(!aParts || aParts.length < 4 || aParts.some(p => !p || !isValidRange(p))){
+    showToast("Complète d’abord A1 à A4 avec des plages valides.");
+    return;
+  }
+
+  const target = week.objectives[targetKey];
+  target.mode = "manual";
+  target.parts = [
+    mergeRanges(aParts[0], aParts[1]),
+    mergeRanges(aParts[2], aParts[3])
+  ];
+  saveState();
+  showToast(`${targetKey} calqué sur A.`);
+}
+
+function syncDAFromA(){
+  syncDerivedObjectiveFromA("DA");
+}
+
+function syncCFromA(){
+  syncDerivedObjectiveFromA("C");
+}
+
+function taskId(day, moment, itemIndex){
+  return `${day}__${moment}__${itemIndex}`;
+}
+
+function weekTaskSummary(week, item){
+  if(item.type === "lf"){
+    if(!week.lf || !isValidRange(week.lf)) return `LF — non défini`;
+    return `LF — ${formatRange(week.lf)}`;
+  }
+  const parts = objectiveResolvedParts(week.objectives[item.key]);
+  const part = parts[item.index];
+  if(!part) return `${item.key}${item.index+1} — non défini`;
+  const code = OBJECTIVE_CONFIG[item.key].parts === 1 ? item.key : `${item.key}${item.index+1}`;
+  return `${code} — ${formatRange(part)}`;
+}
+
+function countWeekStats(week){
+  let total = 0, done = 0;
+  scheduleTemplate.forEach(day=>{
+    day.moments.forEach(moment=>{
+      moment.items.forEach((item, idx)=>{
+        total++;
+        if(week.taskState[taskId(day.day,moment.name,idx)]) done++;
       });
+    });
+  });
+  return {total,done,percent: total ? Math.round((done/total)*100) : 0};
+}
+
+function countDayStats(week, dayObj){
+  let total = 0, done = 0;
+  dayObj.moments.forEach(moment=>{
+    moment.items.forEach((item, idx)=>{
+      total++;
+      if(week.taskState[taskId(dayObj.day,moment.name,idx)]) done++;
+    });
+  });
+  return {total,done,percent: total ? Math.round((done/total)*100) : 0};
+}
+
+function validatedVersesCount(surahNo){
+  return state.verseProgress[surahNo]?.validated?.length || 0;
+}
+
+function getSurahStatus(surahNo){
+  const surah = SURAHS.find(s => s.n === Number(surahNo));
+  const data = state.verseProgress[surahNo];
+  const count = data.validated.length;
+
+  if(count === 0) return "gray";
+  if(count < surah.v) return "yellow";
+
+  const date = data.professorValidatedDate ? new Date(data.professorValidatedDate + "T00:00:00") : null;
+  if(date){
+    const now = new Date();
+    if((now - date) >= FOUR_WEEKS_MS){
+      return "green-light";
     }
+  }
+  return "green-dark";
+}
 
-    function buildEditableEntry(type, label, fixedLabel = false) {
-      entryCounter++;
-      const id = `${type}-${entryCounter}`;
-      const div = document.createElement("div");
-      div.className = "item-box";
-      div.id = id;
-      div.dataset.type = type;
+function getGlobalProgress(){
+  let learned = 0;
+  SURAHS.forEach(s => {
+    learned += validatedVersesCount(s.n);
+  });
+  return { learned, percent: Math.round((learned/TOTAL_VERSES)*100) };
+}
 
-      div.innerHTML = `
-        <div class="item-head">
-          <span class="badge">${label}</span>
-          ${fixedLabel ? "" : `<button class="btn btn-danger" type="button" onclick="removeEntry('${id}')">Supprimer</button>`}
+function countCompleteSurahs(){
+  return SURAHS.filter(s => validatedVersesCount(s.n) === s.v).length;
+}
+
+function countStartedSurahs(){
+  return SURAHS.filter(s => {
+    const c = validatedVersesCount(s.n);
+    return c > 0 && c < s.v;
+  }).length;
+}
+
+function getRASurahs(){
+  return SURAHS.filter(s => getSurahStatus(s.n) === "green-light");
+}
+
+function getNextSurahToFinish(){
+  const started = SURAHS
+    .map(s => ({
+      ...s,
+      learned: validatedVersesCount(s.n),
+      remaining: s.v - validatedVersesCount(s.n)
+    }))
+    .filter(s => s.learned > 0 && s.learned < s.v)
+    .sort((a,b) => a.remaining - b.remaining || a.n - b.n);
+
+  return started[0] || null;
+}
+
+function toggleVerse(surahNo, ayahNo){
+  const data = state.verseProgress[surahNo];
+  const idx = data.validated.indexOf(ayahNo);
+
+  if(idx === -1){
+    data.validated.push(ayahNo);
+    data.validated.sort((a,b)=>a-b);
+    data.validatedAt[ayahNo] = new Date().toISOString();
+  } else {
+    data.validated.splice(idx,1);
+    delete data.validatedAt[ayahNo];
+    data.professorValidatedDate = "";
+  }
+
+  maybeHandleSurahCompletion(surahNo);
+  saveState();
+}
+
+function selectAllVerses(surahNo){
+  const surah = SURAHS.find(s => s.n === Number(surahNo));
+  const data = state.verseProgress[surahNo];
+
+  data.validated = Array.from({length: surah.v}, (_, i) => i + 1);
+  data.validatedAt = {};
+  data.validated.forEach(v => {
+    data.validatedAt[v] = new Date().toISOString();
+  });
+
+  maybeHandleSurahCompletion(surahNo);
+  saveState();
+}
+
+function clearAllVerses(surahNo){
+  const data = state.verseProgress[surahNo];
+  data.validated = [];
+  data.validatedAt = {};
+  data.professorValidatedDate = "";
+  saveState();
+}
+
+function selectVerseRange(surahNo){
+  const startInput = document.getElementById(`rangeStart-${surahNo}`);
+  const endInput = document.getElementById(`rangeEnd-${surahNo}`);
+  if(!startInput || !endInput) return;
+
+  let start = parseInt(startInput.value || "1", 10);
+  let end = parseInt(endInput.value || "1", 10);
+
+  const max = maxAyah(surahNo);
+  if(isNaN(start)) start = 1;
+  if(isNaN(end)) end = 1;
+  if(start < 1) start = 1;
+  if(end > max) end = max;
+
+  if(start > end){
+    const temp = start;
+    start = end;
+    end = temp;
+  }
+
+  const data = state.verseProgress[surahNo];
+
+  for(let i = start; i <= end; i++){
+    if(!data.validated.includes(i)){
+      data.validated.push(i);
+      data.validatedAt[i] = new Date().toISOString();
+    }
+  }
+
+  data.validated.sort((a,b)=>a-b);
+  maybeHandleSurahCompletion(surahNo);
+  saveState();
+}
+
+function maybeHandleSurahCompletion(surahNo){
+  const surah = SURAHS.find(s => s.n === Number(surahNo));
+  const data = state.verseProgress[surahNo];
+  const count = data.validated.length;
+
+  if(count === surah.v && !data.professorValidatedDate){
+    const today = new Date().toISOString().slice(0,10);
+    data.professorValidatedDate = today;
+    triggerSurahCelebration(surah.name);
+  }
+
+  if(count < surah.v){
+    data.professorValidatedDate = "";
+  }
+}
+
+function setProfessorValidatedDate(surahNo, value){
+  state.verseProgress[surahNo].professorValidatedDate = value;
+  saveState();
+}
+
+function selectSurah(surahNo){
+  state.selectedSurah = Number(surahNo);
+  saveState();
+}
+
+function setMappingFilter(filter){
+  state.mappingFilter = filter;
+  saveState();
+}
+
+function updateTaskCheck(id, checked, dayName){
+  const week = getWeek();
+  if(!week) return;
+
+  const beforeDay = countDayStats(week, scheduleTemplate.find(d=>d.day===dayName)).percent;
+  const beforeWeek = countWeekStats(week).percent;
+
+  week.taskState[id] = checked;
+
+  const afterDay = countDayStats(week, scheduleTemplate.find(d=>d.day===dayName)).percent;
+  const afterWeek = countWeekStats(week).percent;
+
+  if(afterDay === 100 && beforeDay < 100 && !week.celebrations.days[dayName]){
+    week.celebrations.days[dayName] = true;
+    triggerDayCelebration(dayName);
+  }
+
+  if(afterWeek === 100 && beforeWeek < 100 && !week.celebrations.week){
+    week.celebrations.week = true;
+    triggerWeekCelebration();
+  }
+
+  saveState();
+}
+
+function showToast(message){
+  const el = document.getElementById("toast");
+  el.textContent = message;
+  el.classList.add("show");
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=>el.classList.remove("show"), 2200);
+}
+
+function launchConfetti(count=40, spread="normal"){
+  const layer = document.getElementById("confetti-layer");
+  const colors = ["#1f6f5f","#2f8e79","#a67c2e","#f59e0b","#ef4444","#3b82f6","#a855f7"];
+  for(let i=0;i<count;i++){
+    const piece = document.createElement("div");
+    piece.className = "confetti";
+    piece.style.left = Math.random()*100 + "vw";
+    piece.style.background = colors[Math.floor(Math.random()*colors.length)];
+    piece.style.animationDuration = (spread === "big" ? 2.8 + Math.random()*1.6 : 1.8 + Math.random()*1.2) + "s";
+    piece.style.width = (8 + Math.random()*8) + "px";
+    piece.style.height = (10 + Math.random()*12) + "px";
+    layer.appendChild(piece);
+    setTimeout(()=>piece.remove(), 4500);
+  }
+}
+
+function triggerDayCelebration(dayName){
+  showToast(`${dayName} complété !`);
+  launchConfetti(45, "normal");
+}
+
+function triggerWeekCelebration(){
+  showToast("Semaine complétée !");
+  launchConfetti(140, "big");
+  const burst = document.getElementById("weekBurst");
+  burst.classList.add("show");
+  setTimeout(()=>burst.classList.remove("show"), 2200);
+}
+
+function triggerSurahCelebration(name){
+  showToast(`Sourate ${name} validée !`);
+  launchConfetti(120, "big");
+  const burst = document.getElementById("surahBurst");
+  burst.innerHTML = `Sourate validée !<br>${escapeHtml(name)}`;
+  burst.classList.add("show");
+  setTimeout(()=>burst.classList.remove("show"), 2400);
+}
+
+function updateWeekDate(value){
+  const week = getWeek();
+  if(!week || !value) return;
+  week.startDate = value;
+  week.title = weekTitleFromDate(value);
+  saveState();
+}
+
+function renderDashboard(){
+  const week = getWeek();
+  const stats = week ? countWeekStats(week) : {percent:0};
+  const global = getGlobalProgress();
+
+  document.getElementById("globalPercent").textContent = `${global.percent}%`;
+  document.getElementById("globalPercentBar").style.width = `${global.percent}%`;
+  document.getElementById("globalVersesText").textContent = `${global.learned} / ${TOTAL_VERSES} versets`;
+  document.getElementById("completedWeeks").textContent = state.weeks.filter(w=>countWeekStats(w).percent===100).length;
+  document.getElementById("weekPercentBig").textContent = `${stats.percent}%`;
+  document.getElementById("weekPercentBarBig").style.width = `${stats.percent}%`;
+  document.getElementById("dashboardCurrentWeekLabel").textContent = week ? week.title : "Aucune semaine";
+  document.getElementById("completeSurahsCount").textContent = countCompleteSurahs();
+}
+
+function renderDerivedObjectiveCard(key, week){
+  const cfg = OBJECTIVE_CONFIG[key];
+  const obj = week.objectives[key];
+  const parts = obj.parts || [];
+  const buttonAction = key === "DA" ? "syncDAFromA()" : "syncCFromA()";
+
+  let html = `
+    <div class="objective-card">
+      <div class="objective-head">
+        <h3>${key} — ${cfg.title}</h3>
+        <span class="week-badge">Calqué sur A</span>
+      </div>
+
+      <div class="footer-actions" style="margin-top:0;margin-bottom:10px;">
+        <button onclick="${buttonAction}">Calquer ${key} sur A</button>
+      </div>
+
+      <div class="summary-box">
+        ${key}1 = de A1 début à A2 fin<br>
+        ${key}2 = de A3 début à A4 fin
+      </div>
+  `;
+
+  for(let i=0;i<cfg.parts;i++){
+    const p = parts[i];
+    const code = `${key}${i+1}`;
+    html += `
+      <div class="part-card">
+        <h4>${code}</h4>
+        <div class="summary-box">
+          ${p && isValidRange(p) ? `<strong>${formatRange(p)}</strong> — ${rangeCount(p)} verset(s)` : `Non encore généré`}
         </div>
-        <div class="grid grid-3">
-          <div>
-            <label>Sourate</label>
-            <select class="surah-select" onchange="updateVerseSelectors('${id}', this.value)">
-              ${createSurahOptions(1)}
-            </select>
-          </div>
-          <div>
-            <label>Verset début</label>
-            <select class="verse-start"></select>
-          </div>
-          <div>
-            <label>Verset fin</label>
-            <select class="verse-end"></select>
-          </div>
+      </div>
+    `;
+  }
+
+  html += `</div>`;
+  return html;
+}
+
+function renderObjectives(){
+  const week = getWeek();
+  const container = document.getElementById("objectivesContent");
+
+  if(!week){
+    container.innerHTML = `<div class="empty">Aucune semaine créée.</div>`;
+    return;
+  }
+
+  const stats = countWeekStats(week);
+  document.getElementById("currentWeekLabelObjectives").textContent = week.title;
+  document.getElementById("currentWeekBadgeObjectives").textContent = `${stats.percent}%`;
+
+  let html = `
+    <div class="objective-card">
+      <div class="objective-head">
+        <h3>Calendrier de la semaine</h3>
+      </div>
+      <div class="row">
+        <div>
+          <label>Date de début de la semaine active</label>
+          <input type="date" value="${escapeHtml(week.startDate)}" onchange="updateWeekDate(this.value)">
         </div>
-        <div style="margin-top:12px;">
-          <label>Note optionnelle</label>
-          <input type="text" class="entry-note" placeholder="Exemple : à fluidifier / à consolider" />
+        <div>
+          <label>Créer une autre semaine à partir d’une date</label>
+          <input type="date" value="${escapeHtml(state.pendingWeekDate || "")}" onchange="setPendingWeekDate(this.value)">
         </div>
-      `;
+      </div>
+      <div class="footer-actions">
+        <button onclick="createWeekFromDate()">Valider la création de la semaine</button>
+        <button class="secondary" onclick="cancelPendingWeek()">Annuler</button>
+      </div>
+    </div>
+  `;
 
-      return div;
+  Object.keys(OBJECTIVE_CONFIG).forEach(key=>{
+    if(key === "DA" || key === "C"){
+      html += renderDerivedObjectiveCard(key, week);
+      return;
     }
 
-    function buildReadonlyEntry(label, valuesArray) {
-      entryCounter++;
-      const id = `readonly-${entryCounter}`;
-      const div = document.createElement("div");
-      div.className = "item-box readonly-box";
-      div.id = id;
+    const cfg = OBJECTIVE_CONFIG[key];
+    const obj = week.objectives[key];
+    const resolved = objectiveResolvedParts(obj);
 
-      const content = valuesArray.length
-        ? valuesArray.map(v => `<div class="entry-line">${escapeHtml(formatSelection(v))}</div>`).join("")
-        : `<div class="entry-line">Aucune donnée</div>`;
-
-      div.innerHTML = `
-        <div class="item-head">
-          <span class="badge">${label}</span>
+    html += `
+      <div class="objective-card">
+        <div class="objective-head">
+          <h3>${key} — ${cfg.title}</h3>
+          <span class="week-badge">${obj.mode === "auto" ? "Auto" : "Manuel"}</span>
         </div>
-        <div class="readonly-label">Bloc généré automatiquement</div>
-        ${content}
-      `;
 
-      return div;
-    }
-
-    function updateVerseSelectors(id, surahNumber, startValue = 1, endValue = null) {
-      const surah = getSurahByNumber(surahNumber);
-      if (!surah) return;
-
-      const box = document.getElementById(id);
-      const startSelect = box.querySelector(".verse-start");
-      const endSelect = box.querySelector(".verse-end");
-
-      const finalEnd = endValue || surah.verses;
-
-      startSelect.innerHTML = createVerseOptions(surah.verses, startValue);
-      endSelect.innerHTML = createVerseOptions(surah.verses, finalEnd);
-
-      startSelect.onchange = () => {
-        const start = Number(startSelect.value);
-        const currentEnd = Number(endSelect.value);
-        endSelect.innerHTML = createVerseOptions(surah.verses, currentEnd < start ? start : currentEnd);
-        if (Number(endSelect.value) < start) {
-          endSelect.value = start;
-        }
-      };
-    }
-
-    function addEntry(type) {
-      const wrapper = document.getElementById(`${type}-list`);
-      const currentCount = wrapper.querySelectorAll(".item-box").length;
-      const label = currentCount + 1;
-
-      const item = buildEditableEntry(type, `${type}${label}`);
-      wrapper.appendChild(item);
-      updateVerseSelectors(item.id, 1);
-      updateValidateButtonState();
-    }
-
-    function ensureFourAEntries() {
-      const wrapper = document.getElementById("A-list");
-      wrapper.innerHTML = "";
-
-      for (let i = 1; i <= 4; i++) {
-        const item = buildEditableEntry("A", `A${i}`, true);
-        wrapper.appendChild(item);
-        updateVerseSelectors(item.id, 1);
-      }
-
-      updateValidateButtonState();
-    }
-
-    function getEntriesFromContainer(containerId) {
-      const items = [...document.querySelectorAll(`#${containerId} .item-box`)];
-      return items.map(item => {
-        if (item.classList.contains("readonly-box")) {
-          const raw = item.dataset.values ? JSON.parse(item.dataset.values) : [];
-          return {
-            label: item.querySelector(".badge")?.textContent || "",
-            values: raw
-          };
-        }
-
-        const surahNumber = Number(item.querySelector(".surah-select").value);
-        const surah = getSurahByNumber(surahNumber);
-        const verseStart = Number(item.querySelector(".verse-start").value);
-        const verseEnd = Number(item.querySelector(".verse-end").value);
-        const note = item.querySelector(".entry-note").value.trim();
-
-        return {
-          surahNumber,
-          surahName: surah ? surah.name : "",
-          verseStart,
-          verseEnd,
-          note
-        };
-      });
-    }
-
-    function getAEntries() {
-      const items = [...document.querySelectorAll("#A-list .item-box")];
-      return items.map((item, index) => {
-        const surahNumber = Number(item.querySelector(".surah-select").value);
-        const surah = getSurahByNumber(surahNumber);
-        const verseStart = Number(item.querySelector(".verse-start").value);
-        const verseEnd = Number(item.querySelector(".verse-end").value);
-        const note = item.querySelector(".entry-note").value.trim();
-
-        return {
-          label: `A${index + 1}`,
-          surahNumber,
-          surahName: surah ? surah.name : "",
-          verseStart,
-          verseEnd,
-          note
-        };
-      });
-    }
-
-    function resetDerivedSection(type) {
-      document.getElementById(`${type}-list`).innerHTML = "";
-    }
-
-    function generateGroupedBlocksFromA(targetType) {
-      const aEntries = getAEntries();
-
-      if (aEntries.length < 4) {
-        alert("Il faut 4 blocs d'apprentissage (A1 à A4) pour générer automatiquement cette partie.");
-        return;
-      }
-
-      const group1 = [aEntries[0], aEntries[1]];
-      const group2 = [aEntries[2], aEntries[3]];
-
-      const wrapper = document.getElementById(`${targetType}-list`);
-      wrapper.innerHTML = "";
-
-      const label1 = targetType === "DA" ? "DA1" : "C1";
-      const label2 = targetType === "DA" ? "DA2" : "C2";
-
-      const item1 = buildReadonlyEntry(label1, group1);
-      item1.dataset.values = JSON.stringify(group1);
-
-      const item2 = buildReadonlyEntry(label2, group2);
-      item2.dataset.values = JSON.stringify(group2);
-
-      wrapper.appendChild(item1);
-      wrapper.appendChild(item2);
-    }
-
-    function generateDAFromA() {
-      generateGroupedBlocksFromA("DA");
-    }
-
-    function generateCFromA() {
-      generateGroupedBlocksFromA("C");
-    }
-
-    function updateValidateButtonState() {
-      const title = document.getElementById("weekTitle").value.trim();
-      document.getElementById("validateWeekBtn").disabled = title.length === 0;
-    }
-
-    function loadWeeks() {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [];
-    }
-
-    function saveWeek() {
-      const title = document.getElementById("weekTitle").value.trim();
-      const professorNote = document.getElementById("weekProfessorNote").value.trim();
-
-      if (!title) {
-        alert("Merci de renseigner un titre de semaine.");
-        return;
-      }
-
-      const weekData = {
-        id: crypto.randomUUID(),
-        title,
-        professorNote,
-        createdAt: new Date().toLocaleString("fr-FR"),
-        A: getAEntries(),
-        RN: getEntriesFromContainer("RN-list"),
-        RA: getEntriesFromContainer("RA-list"),
-        LF: getEntriesFromContainer("LF-list"),
-        DA: getEntriesFromContainer("DA-list"),
-        C: getEntriesFromContainer("C-list")
-      };
-
-      const weeks = loadWeeks();
-      weeks.unshift(weekData);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(weeks));
-
-      resetForm();
-      renderHistory();
-      alert("Semaine créée et enregistrée avec succès.");
-    }
-
-    function deleteWeek(id) {
-      const weeks = loadWeeks().filter(w => w.id !== id);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(weeks));
-      renderHistory();
-    }
-
-    function deleteAllWeeks() {
-      const confirmDelete = confirm("Voulez-vous vraiment supprimer toutes les semaines historiques ?");
-      if (!confirmDelete) return;
-      localStorage.removeItem(STORAGE_KEY);
-      renderHistory();
-    }
-
-    function renderStandardBlock(title, entries) {
-      if (!entries || entries.length === 0) {
-        return `
-          <div class="week-block">
-            <h4>${title}</h4>
-            <div class="entry-line">Aucune sélection</div>
-          </div>
-        `;
-      }
-
-      return `
-        <div class="week-block">
-          <h4>${title}</h4>
-          ${entries.map(e => `<div class="entry-line">${escapeHtml(formatSelection(e))}</div>`).join("")}
+        <div class="mode-switch">
+          <button class="${obj.mode === "auto" ? "" : "inactive"}" onclick="updateObjectiveMode('${key}','auto')">Automatique</button>
+          <button class="${obj.mode === "manual" ? "" : "inactive"}" onclick="updateObjectiveMode('${key}','manual')">Manuelle</button>
+          <button class="secondary" onclick="applyAutoToManual('${key}')">Copier l’auto vers manuel</button>
         </div>
-      `;
-    }
 
-    function renderDerivedBlock(title, entries) {
-      if (!entries || entries.length === 0) {
-        return `
-          <div class="week-block">
-            <h4>${title}</h4>
-            <div class="entry-line">Aucune sélection</div>
-          </div>
-        `;
-      }
-
-      return `
-        <div class="week-block">
-          <h4>${title}</h4>
-          ${entries.map(group => `
-            <div style="margin-bottom:10px;">
-              <div style="font-weight:700; margin-bottom:6px;">${escapeHtml(group.label || "")}</div>
-              ${(group.values || []).map(v => `<div class="entry-line">${escapeHtml(formatSelection(v))}</div>`).join("")}
-            </div>
-          `).join("")}
-        </div>
-      `;
-    }
-
-    function renderHistory() {
-      const container = document.getElementById("historyContainer");
-      const weeks = loadWeeks();
-
-      if (!weeks.length) {
-        container.innerHTML = `<div class="empty">Aucune semaine historique enregistrée.</div>`;
-        return;
-      }
-
-      container.innerHTML = weeks.map(week => `
-        <div class="week-card">
-          <div class="section-title">
+        <div class="part-card">
+          <h4>Plage globale</h4>
+          <div class="row">
             <div>
-              <h3>${escapeHtml(week.title)}</h3>
-              <div class="week-meta">Créée le : ${escapeHtml(week.createdAt || "")}</div>
-              ${week.professorNote ? `<div class="week-meta">Remarque : ${escapeHtml(week.professorNote)}</div>` : ""}
+              <label>Début sourate</label>
+              <select onchange="updateObjectiveRange('${key}','startSurah',this.value)">${surahOptions(Number(obj.range.startSurah))}</select>
             </div>
-            <button class="btn btn-danger" onclick="deleteWeek('${week.id}')">Supprimer</button>
+            <div>
+              <label>Début verset</label>
+              <select onchange="updateObjectiveRange('${key}','startAyah',this.value)">
+                ${ayahOptions(obj.range.startSurah, obj.range.startAyah)}
+              </select>
+            </div>
+            <div>
+              <label>Fin sourate</label>
+              <select onchange="updateObjectiveRange('${key}','endSurah',this.value)">${surahOptions(Number(obj.range.endSurah))}</select>
+            </div>
+            <div>
+              <label>Fin verset</label>
+              <select onchange="updateObjectiveRange('${key}','endAyah',this.value)">
+                ${ayahOptions(obj.range.endSurah, obj.range.endAyah)}
+              </select>
+            </div>
           </div>
-
-          ${renderStandardBlock("Apprentissage (A)", week.A)}
-          ${renderStandardBlock("Révision nouvelle (RN)", week.RN)}
-          ${renderStandardBlock("Révision ancienne (RA)", week.RA)}
-          ${renderStandardBlock("Lecture fluide (LF)", week.LF)}
-          ${renderDerivedBlock("Découverte / DA", week.DA)}
-          ${renderDerivedBlock("Consolidation (C)", week.C)}
+          <div class="summary-box">
+            ${isValidRange(obj.range) ? `<strong>${formatRange(obj.range)}</strong> — ${rangeCount(obj.range)} verset(s)` : `<span style="color:#b45309;font-weight:700;">Plage invalide.</span>`}
+          </div>
         </div>
-      `).join("");
+    `;
+
+    if(obj.mode === "auto"){
+      html += `<div class="part-card"><h4>Découpage automatique</h4>`;
+      resolved.forEach((p,i)=>{
+        const code = cfg.parts === 1 ? key : `${key}${i+1}`;
+        html += `<div class="summary-box" style="margin-bottom:8px;"><strong>${code}</strong> — ${p ? formatRange(p) : "non défini"}</div>`;
+      });
+      html += `</div>`;
+    } else {
+      html += `<div class="part-card"><h4>Découpage manuel</h4>`;
+      for(let i=0;i<cfg.parts;i++){
+        const p = obj.parts[i];
+        const code = cfg.parts === 1 ? key : `${key}${i+1}`;
+        html += `
+          <div class="part-card" style="background:#fff;">
+            <h4>${code}</h4>
+            <div class="row">
+              <div>
+                <label>Début sourate</label>
+                <select onchange="updateManualPart('${key}',${i},'startSurah',this.value)">${surahOptions(Number(p.startSurah))}</select>
+              </div>
+              <div>
+                <label>Début verset</label>
+                <select onchange="updateManualPart('${key}',${i},'startAyah',this.value)">
+                  ${ayahOptions(p.startSurah, p.startAyah)}
+                </select>
+              </div>
+              <div>
+                <label>Fin sourate</label>
+                <select onchange="updateManualPart('${key}',${i},'endSurah',this.value)">${surahOptions(Number(p.endSurah))}</select>
+              </div>
+              <div>
+                <label>Fin verset</label>
+                <select onchange="updateManualPart('${key}',${i},'endAyah',this.value)">
+                  ${ayahOptions(p.endSurah, p.endAyah)}
+                </select>
+              </div>
+            </div>
+            <div class="summary-box">
+              ${isValidRange(p) ? `<strong>${formatRange(p)}</strong> — ${rangeCount(p)} verset(s)` : `<span style="color:#b45309;font-weight:700;">Plage invalide</span>`}
+            </div>
+          </div>
+        `;
+      }
+      html += `</div>`;
     }
 
-    function resetForm() {
-      document.getElementById("weekTitle").value = "";
-      document.getElementById("weekProfessorNote").value = "";
-      document.getElementById("RN-list").innerHTML = "";
-      document.getElementById("RA-list").innerHTML = "";
-      document.getElementById("LF-list").innerHTML = "";
-      document.getElementById("DA-list").innerHTML = "";
-      document.getElementById("C-list").innerHTML = "";
+    html += `</div>`;
+  });
 
-      ensureFourAEntries();
-      addEntry("RN");
-      addEntry("RA");
-      addEntry("LF");
+  html += `
+    <div class="objective-card">
+      <div class="objective-head"><h3>LF — Lecture future</h3></div>
+      <div class="row">
+        <div>
+          <label>Début sourate</label>
+          <select onchange="updateLF('startSurah', this.value)">${surahOptions(Number(week.lf.startSurah))}</select>
+        </div>
+        <div>
+          <label>Début verset</label>
+          <select onchange="updateLF('startAyah', this.value)">
+            ${ayahOptions(week.lf.startSurah, week.lf.startAyah)}
+          </select>
+        </div>
+        <div>
+          <label>Fin sourate</label>
+          <select onchange="updateLF('endSurah', this.value)">${surahOptions(Number(week.lf.endSurah))}</select>
+        </div>
+        <div>
+          <label>Fin verset</label>
+          <select onchange="updateLF('endAyah', this.value)">
+            ${ayahOptions(week.lf.endSurah, week.lf.endAyah)}
+          </select>
+        </div>
+      </div>
+      <div class="summary-box">
+        ${isValidRange(week.lf) ? `<strong>${formatRange(week.lf)}</strong> — ${rangeCount(week.lf)} verset(s)` : `<span style="color:#b45309;font-weight:700;">Plage invalide.</span>`}
+      </div>
+    </div>
+  `;
 
-      updateValidateButtonState();
-    }
+  container.innerHTML = html;
+}
 
-    function escapeHtml(str) {
-      return String(str)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
+function renderWeek(){
+  const week = getWeek();
+  const container = document.getElementById("weekContent");
 
-    document.getElementById("weekTitle").addEventListener("input", updateValidateButtonState);
+  if(!week){
+    container.innerHTML = `<div class="empty">Aucune semaine créée.</div>`;
+    return;
+  }
 
-    ensureFourAEntries();
-    addEntry("RN");
-    addEntry("RA");
-    addEntry("LF");
-    renderHistory();
-    updateValidateButtonState();
-  </script>
+  const stats = countWeekStats(week);
+  document.getElementById("currentWeekLabelWeek").textContent = week.title;
+  document.getElementById("currentWeekBadgeWeek").textContent = `${stats.percent}%`;
+
+  let html = `
+    <div class="card" style="margin-bottom:16px;">
+      <div class="stat-label">Progression de la semaine</div>
+      <div class="stat-value">${stats.percent}%</div>
+      <div class="progress"><div style="width:${stats.percent}%"></div></div>
+      <div class="subtle" style="margin-top:8px;">${stats.done} tâches réalisées sur ${stats.total}</div>
+    </div>
+    <div class="days">
+  `;
+
+  scheduleTemplate.forEach(day=>{
+    const dayStats = countDayStats(week, day);
+
+    html += `
+      <div class="day-card">
+        <div class="day-top">
+          <h3>${day.day}</h3>
+          <span class="week-badge">${dayStats.percent}%</span>
+        </div>
+        <div class="progress"><div style="width:${dayStats.percent}%"></div></div>
+        <div class="moments">
+    `;
+
+    day.moments.forEach(moment=>{
+      html += `<div class="moment"><h4>${moment.name}</h4>`;
+      moment.items.forEach((item, idx)=>{
+        const id = taskId(day.day, moment.name, idx);
+        const checked = !!week.taskState[id];
+        html += `
+          <div class="task">
+            <label>
+              <input type="checkbox" ${checked ? "checked" : ""} onchange="updateTaskCheck('${id}', this.checked, '${day.day}')">
+              <span>${escapeHtml(weekTaskSummary(week,item))}</span>
+            </label>
+          </div>
+        `;
+      });
+      html += `</div>`;
+    });
+
+    html += `</div></div>`;
+  });
+
+  html += `</div>`;
+  container.innerHTML = html;
+}
+
+function renderHistory(){
+  const container = document.getElementById("historyContent");
+  if(!state.weeks.length){
+    container.innerHTML = `<div class="empty">Aucune semaine enregistrée.</div>`;
+    return;
+  }
+
+  container.innerHTML = state.weeks
+    .slice()
+    .sort((a,b)=>(a.startDate||"").localeCompare(b.startDate||""))
+    .map(week=>{
+      const stats = countWeekStats(week);
+      return `
+        <div class="history-card">
+          <div class="history-top">
+            <h3>${escapeHtml(week.title)}</h3>
+            <span class="week-badge">${stats.percent}%</span>
+          </div>
+          <div class="subtle">${escapeHtml(week.startDate || "")}</div>
+          <div class="progress"><div style="width:${stats.percent}%"></div></div>
+          <div class="subtle" style="margin-top:8px;">${stats.done} / ${stats.total} tâches réalisées</div>
+          <div class="history-actions">
+            <button onclick="selectWeek(${week.id})">Ouvrir cette semaine</button>
+            <button class="danger" onclick="deleteWeek(${week.id})">Supprimer</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+}
+
+function renderMappingFilters(){
+  ["all","gray","yellow","green-dark","green-light"].forEach(f=>{
+    const btn = document.getElementById(`filter-${f}`);
+    if(!btn) return;
+    btn.className = state.mappingFilter === f ? "active-filter" : "ghost";
+  });
+}
+
+function renderMappingStats(){
+  const ra = getRASurahs();
+  const started = countStartedSurahs();
+  const next = getNextSurahToFinish();
+
+  document.getElementById("raSurahCount").textContent = ra.length;
+  document.getElementById("startedSurahCount").textContent = started;
+
+  const nextBox = document.getElementById("nextSurahToFinish");
+  if(next){
+    nextBox.innerHTML = `<strong>${escapeHtml(next.name)}</strong><br>${next.learned} / ${next.v} versets · reste ${next.remaining}`;
+  } else {
+    nextBox.textContent = "Aucune sourate entamée";
+  }
+
+  const raList = document.getElementById("raPriorityList");
+  if(!ra.length){
+    raList.innerHTML = `<li>Aucune sourate en RA pour l’instant</li>`;
+  } else {
+    raList.innerHTML = ra.slice(0,5).map(s=>{
+      const d = state.verseProgress[s.n].professorValidatedDate;
+      return `<li><strong>${escapeHtml(s.name)}</strong>${d ? ` — depuis le ${formatDate(d)}` : ""}</li>`;
+    }).join("");
+  }
+}
+
+function renderMapping(){
+  renderMappingFilters();
+  renderMappingStats();
+
+  const list = document.getElementById("surahList");
+  const panel = document.getElementById("versePanel");
+
+  const filtered = SURAHS.filter(s => {
+    const status = getSurahStatus(s.n);
+    return state.mappingFilter === "all" ? true : status === state.mappingFilter;
+  });
+
+  list.innerHTML = filtered.map(s => {
+    const status = getSurahStatus(s.n);
+    const validated = validatedVersesCount(s.n);
+    const data = state.verseProgress[s.n];
+    const dateText = data.professorValidatedDate ? ` · Validée le ${formatDate(data.professorValidatedDate)}` : "";
+    const statusText = status === "gray"
+      ? "Non apprise"
+      : status === "yellow"
+        ? "Entamée"
+        : status === "green-dark"
+          ? "Validée récemment"
+          : "À réviser (RA)";
+
+    return `
+      <div class="surah-card ${status} ${state.selectedSurah === s.n ? "selected" : ""}" onclick="selectSurah(${s.n})">
+        <div class="surah-top">
+          <h3>${s.n}. ${escapeHtml(s.name)}</h3>
+        </div>
+        <div class="surah-meta">${validated} / ${s.v} versets</div>
+        <div class="progress"><div style="width:${Math.round((validated/s.v)*100)}%"></div></div>
+        <div class="surah-status">${statusText}${dateText}</div>
+      </div>
+    `;
+  }).join("");
+
+  const selected = SURAHS.find(s => s.n === Number(state.selectedSurah)) || SURAHS[0];
+  const data = state.verseProgress[selected.n];
+  const status = getSurahStatus(selected.n);
+
+  panel.innerHTML = `
+    <div class="objective-head">
+      <div>
+        <h3>${selected.n}. ${escapeHtml(selected.name)}</h3>
+        <div class="subtle">${validatedVersesCount(selected.n)} / ${selected.v} versets validés</div>
+      </div>
+      <span class="week-badge">${Math.round((validatedVersesCount(selected.n)/selected.v)*100)}%</span>
+    </div>
+
+    <div class="summary-box">
+      Statut :
+      <strong>
+        ${status === "gray" ? "Non apprise" : status === "yellow" ? "Entamée" : status === "green-dark" ? "Validée récemment" : "À réviser (RA)"}
+      </strong>
+    </div>
+
+    <div style="margin-top:12px;">
+      <label>Date de validation professeur</label>
+      <input type="date" value="${escapeHtml(data.professorValidatedDate || "")}" onchange="setProfessorValidatedDate(${selected.n}, this.value)">
+    </div>
+
+    <div class="part-card" style="margin-top:12px;">
+      <h4>Sélection multiple</h4>
+      <div class="row">
+        <div>
+          <label>Verset début</label>
+          <select id="rangeStart-${selected.n}">
+            ${ayahOptions(selected.n, 1)}
+          </select>
+        </div>
+        <div>
+          <label>Verset fin</label>
+          <select id="rangeEnd-${selected.n}">
+            ${ayahOptions(selected.n, selected.v)}
+          </select>
+        </div>
+      </div>
+      <div class="footer-actions">
+        <button onclick="selectVerseRange(${selected.n})">Valider la plage</button>
+        <button class="secondary" onclick="selectAllVerses(${selected.n})">Tout sélectionner</button>
+        <button class="secondary" onclick="clearAllVerses(${selected.n})">Tout annuler</button>
+      </div>
+    </div>
+
+    <div class="verse-grid">
+      ${Array.from({length:selected.v}, (_,i) => {
+        const ayah = i + 1;
+        const validated = data.validated.includes(ayah);
+        const className = validated ? (status === "green-light" ? "green-light" : "green-dark") : "gray";
+        return `<button class="verse-btn ${className}" onclick="toggleVerse(${selected.n}, ${ayah})">${ayah}</button>`;
+      }).join("")}
+    </div>
+  `;
+}
+
+function formatDate(dateStr){
+  if(!dateStr) return "";
+  const d = new Date(dateStr + "T00:00:00");
+  return d.toLocaleDateString("fr-FR");
+}
+
+function renderAll(){
+  renderDashboard();
+  renderObjectives();
+  renderWeek();
+  renderHistory();
+  renderMapping();
+}
+
+function escapeHtml(str){
+  return String(str ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;");
+}
+
+renderAll();
+</script>
 </body>
 </html>
